@@ -1,0 +1,14 @@
+{
+    "name": "biurad/consolelite",
+    "description": "This is the light weight version of Symfony Console",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Divine Niiquaye",
+            "email": "support@biuhub.net"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
