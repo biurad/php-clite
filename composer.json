@@ -10,5 +10,15 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "autoload": {
+        "files": [
+            "autoload.php"
+        ],
+        "psr-4": {
+            "Radion\\Component\\Console\\": "src/"
+        }
+    },
+    "require": {
+        "psr/log": "^1.1.0"
+    }
 }
