@@ -22,7 +22,7 @@
         "psr-4": {
             "Radion\\Component\\Test\\": "Test/"
         }
-    }
+    },
     "require": {
         "psr/log": "^1.1.0"
     }
