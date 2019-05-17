@@ -15,12 +15,12 @@
             "autoload.php"
         ],
         "psr-4": {
-            "Radion\\Component\\Console\\": "src/"
+            "Radion\\Toolbox\\ConsoleLite\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Radion\\Component\\Test\\": "Test/"
+            "Radion\\Toolbox\\ConsoleLiteTest\\": "Test/"
         }
     },
     "require": {
