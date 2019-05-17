@@ -14,7 +14,7 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Component\Console\Concerns;
+namespace Radion\Toolbox\ConsoleLite\Concerns;
 
 class FileUtils
 {

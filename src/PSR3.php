@@ -14,7 +14,7 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Component\Console;
+namespace Radion\Toolbox\ConsoleLite;
 
 use Psr\Log\LoggerInterface;
 

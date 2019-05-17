@@ -14,9 +14,9 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Component\Console\Command;
+namespace Radion\Toolbox\ConsoleLite\Command;
 
-use Radion\Component\Console\Command;
+use Radion\Toolbox\ConsoleLite\Command;
 
 class CommandList extends Command
 {

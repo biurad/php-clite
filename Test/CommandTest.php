@@ -14,11 +14,11 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
- namespace Radion\Console\Test;
+ namespace Radion\Toolbox\ConsoleLite\Test;
 
 use PHPUnit\Framework\TestCase;
-use Radion\Component\Console\Application;
-use Radion\Component\Console\Command;
+use Radion\Toolbox\ConsoleLite\Application;
+use Radion\Toolbox\ConsoleLite\Command;
 
 class CommandTest extends TestCase
  {

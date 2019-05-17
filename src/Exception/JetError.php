@@ -14,7 +14,7 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Autoloader\Console\Exception;
+namespace Radion\Toolbox\ConsoleLite\Exception;
 
 /**
  * JetError.
@@ -28,6 +28,6 @@ class JetError extends \Exception implements \Throwable
 {
     public function run()
     {
-        set_exception_handler('Radion\Autoloader\Console\Application::exception');
+        set_exception_handler('Radion\Toolbox\ConsoleLite\Application::exception');
     }
 }

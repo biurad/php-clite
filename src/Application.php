@@ -15,13 +15,13 @@
  * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
-namespace Radion\Component\Console;
+namespace Radion\Toolbox\ConsoleLite;
 
 use Closure;
 use Exception;
 use InvalidArgumentException;
-use Radion\Autoloader\Console\Exception\JetError;
-use Radion\Component\Console\Command\CommandList;
+use Radion\Toolbox\ConsoleLite\Exception\JetError;
+use Radion\Toolbox\ConsoleLite\Command\CommandList;
 
 class Application
 {
@@ -44,7 +44,6 @@ class Application
     protected $resolvedOptions = [];
     protected $formatter;
     protected $errorhandle;
-    protected $autoloadone;
 
     /** @var array PSR-3 compatible foreground color and their prefix, color, output channel */
     protected $foregroundColors = [
@@ -99,7 +98,6 @@ class Application
     {
         $this->command('hello {name?::Enter a name}', 'Enter your name to start', function ($name) {
             $this->block("Hello {$name}, Nice Meeting you, I'm Biurad Slim Lite Console.", 'white', 'black');
-    
         });
     }
 
@@ -310,7 +308,7 @@ class Application
 
             call_user_func_array($handler, $arguments);
         } catch (JetError $e) {
-            throw new JetError('The Application runned into an error', $e->getCode());
+            $this->handleError($e);
         }
     }
 
@@ -527,7 +525,7 @@ class Application
         if ($width !== null) {
             $this->formatter->setMaxWidth($width);
         } else {
-            // do nothing.
+            $this->formatter->getMaxWidth();
         }
         $this->line();
         $this->line(1, true);
@@ -537,6 +535,18 @@ class Application
         $this->line();
         $this->line(1, true);
         $this->line();
+    }
+
+    /**
+     * Write a help block
+     *
+     * @param mixed $name is the subject
+     * @param string $description is the description
+     * @return void
+     */
+    public function helpblock($name, $description)
+    {
+        return $this->writeln('  '.$this->style($name, 'purple').str_repeat(' ', 2 - strlen($name)) . ' -> ' . $description);
     }
 
     /**
@@ -1069,7 +1079,12 @@ class Application
     {
         //$exception = new Exception;
         $indent = str_repeat(' ', 2);
-        $class = get_class($exception);
+        //$class = get_class($exception);
+        if (get_class($exception) === 'Radion\Toolbox\ConsoleLite\Exception\JetError') {
+            $class = 'Application Error';
+        } else {
+            $class = get_class($exception);
+        }
         $file = $exception->getFile();
         $line = $exception->getLine();
         $filepath = function ($file) {

@@ -15,7 +15,7 @@
  * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
-namespace Radion\Component\Console\Concerns;
+namespace Radion\Toolbox\ConsoleLite\Concerns;
 
 use RuntimeException;
 

@@ -15,7 +15,7 @@
  * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
-namespace Radion\Component\Console;
+namespace Radion\Toolbox\ConsoleLite;
 
 abstract class Command
 {
