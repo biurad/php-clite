@@ -11,12 +11,9 @@
     ],
     "minimum-stability": "stable",
     "autoload": {
-        "files": [
-            "autoload.php"
-        ],
         "psr-4": {
             "Radion\\Toolbox\\ConsoleLite\\": "src/"
-        }
+        },
     },
     "autoload-dev": {
         "psr-4": {
