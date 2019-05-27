@@ -14,9 +14,9 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite\Concerns;
+namespace BiuradPHP\Toolbox\ConsoleLite\Concerns;
 
-class FileUtils
+trait FileUtils
 {
     /**
      * Get relative path between target and base path. If path isn't relative, return full path.
@@ -26,7 +26,7 @@ class FileUtils
      *
      * @return string
      */
-    public static function getRelativePath($path, $base = RADION_ROOT)
+    public static function getRelativePath($path, $base = BiuradPHP_ROOT)
     {
         if ($base) {
             $base = preg_replace('![\\\/]+!', '/', $base);
@@ -266,7 +266,7 @@ class FileUtils
 
         // If the src is not a directory do a simple file copy
         if (!is_dir($src)) {
-            copy($src, $dest);
+            @copy($src, $dest);
             return true;
         }
 
@@ -280,7 +280,7 @@ class FileUtils
         /** @var \DirectoryIterator $f */
         foreach ($i as $f) {
             if ($f->isFile()) {
-                copy($f->getRealPath(), "{$dest}/" . $f->getFilename());
+                @copy($f->getRealPath(), "{$dest}/" . $f->getFilename());
             } else {
                 if (!$f->isDot() && $f->isDir()) {
                     static::rcopy($f->getRealPath(), "{$dest}/{$f}");

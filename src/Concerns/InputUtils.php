@@ -15,110 +15,215 @@
  * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
-namespace Radion\Toolbox\ConsoleLite\Concerns;
+namespace BiuradPHP\Toolbox\ConsoleLite\Concerns;
 
 use RuntimeException;
 
 trait InputUtils
 {
-    protected $questionSuffix = "\n> ";
+    protected $questionSuffix = '> ';
 
     /**
      * Asking question.
      *
-     * @param string $message
-     * @param string $fgColor
-     * @param string $bgColor
+     * @param string $question
+     * @param bool   $default
+     *
+     * @return mixed|null
      */
     public function ask($question, $default = null)
     {
         if ($default) {
             $question = $question.' '.$this->style("[{$default}]", 'green');
         }
+        if (\is_array($default)) {
+            $maxWidth = max(array_map([$this, 'strlen'], array_keys($default)));
 
-        $this->write($question.$this->questionSuffix, 'light_blue');
+            $messages = (array) $question;
+            foreach ($default as $key => $value) {
+                $width = $maxWidth - $this->strlen($key);
+                $messages[] = PHP_EOL.$this->style(' ['.$key.str_repeat('', $width).'] ', 'green').$value;
+            }
+            $question = $messages;
+        }
+
+        $this->writeln($question, 'light_blue').$this->write($this->questionSuffix);
 
         $handle = fopen('php://stdin', 'r');
-        $answer = trim(fgets($handle));
+        $answer = trim(fgets($handle, 4096));
         fclose($handle);
 
-        return $answer ?: $default;
+        return $answer ?? $default;
     }
 
     /**
-     * Asking secret question.
+     * Escapes trailing "\" in given text.
      *
-     * @param string $message
-     * @param string $fgColor
-     * @param string $bgColor
+     * @param string $text Text to escape
+     *
+     * @return string Escaped text
+     *
+     * @internal
      */
-    public function askSecret($question, $default = null)
+    public function escapeTrailingBackslash($text)
     {
-        if ($default) {
-            $question = $question.' '.$this->style("[{$default}]", 'green');
+        if ('\\' === substr($text, -1)) {
+            $len = \strlen($text);
+            $text = rtrim($text, '\\');
+            $text = str_replace("\0", '', $text);
+            $text .= str_repeat("\0", $len - \strlen($text));
         }
 
-        $this->write($question.$this->questionSuffix);
+        return $text;
+    }
 
-        if ($this->isWindows()) {
-            $exe = __DIR__.'/../../bin/hiddeninput.exe';
+    /**
+     * Prompts the user for input and shows what they type.
+     *
+     * @return string
+     */
+    public function prompt()
+    {
+        $stdin = fopen('php://stdin', 'r');
+        $answer = $this->trimAnswer(fgets($stdin, 4096));
+        fclose($stdin);
+
+        return $answer;
+    }
+
+    /**
+     * Returns the length of a string, using mb_strwidth if it is available.
+     *
+     * @param string $string The string to check its length
+     *
+     * @return int The length of the string
+     */
+    public static function strlen($string)
+    {
+        if (false === $encoding = mb_detect_encoding($string, null, true)) {
+            return \strlen($string);
+        }
+
+        return mb_strwidth($string, $encoding);
+    }
+
+    /**
+     * Returns the subset of a string, using mb_substr if it is available.
+     *
+     * @param string   $string String to subset
+     * @param int      $from   Start offset
+     * @param int|null $length Length to read
+     *
+     * @return string The string subset
+     */
+    public static function substr($string, $from, $length = null)
+    {
+        if (false === $encoding = mb_detect_encoding($string, null, true)) {
+            return substr($string, $from, $length);
+        }
+
+        return mb_substr($string, $from, $length, $encoding);
+    }
+
+    /**
+     * Prompts the user for input and hides what they type.
+     *
+     * @param bool $allowFallback if prompting fails for any reason and this is set to true the prompt
+     *                            will be done using the regular prompt() function, otherwise a
+     *                            \RuntimeException is thrown
+     *
+     * @return string
+     *
+     * @throws RuntimeException on failure to prompt, unless $allowFallback is true
+     */
+    public function hiddenPrompt($allowFallback = true)
+    {
+        // handle windows
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // fallback to hiddeninput executable
+            $exe = __DIR__.'\\..\\bin\\hiddeninput.exe';
+
             // handle code running from a phar
             if ('phar:' === substr(__FILE__, 0, 5)) {
                 $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
-                copy($exe, $tmpExe);
+
+                // use stream_copy_to_stream instead of copy
+                // to work around https://bugs.php.net/bug.php?id=64634
+                $source = fopen($exe, 'r');
+                $target = fopen($tmpExe, 'w+');
+                stream_copy_to_stream($source, $target);
+                fclose($source);
+                fclose($target);
+                unset($source, $target);
+
                 $exe = $tmpExe;
             }
-            $value = rtrim(shell_exec($exe));
-            $this->writeln('');
+
+            $output = shell_exec($exe);
+
+            // clean up
             if (isset($tmpExe)) {
                 unlink($tmpExe);
             }
 
-            return $value ?: $default;
-        }
+            if ($output !== null) {
+                // output a newline to be on par with the regular prompt()
+                $this->line();
 
-        if ($this->hasSttyAvailable()) {
-            $sttyMode = shell_exec('stty -g');
-            shell_exec('stty -echo');
-            $handle = fopen('php://stdin', 'r');
-            $value = fgets($handle, 4096);
-            shell_exec(sprintf('stty %s', $sttyMode));
-            fclose($handle);
-            if (false === $value) {
-                throw new RuntimeException('Aborted');
+                return $this->trimAnswer($output);
             }
-            $value = trim($value);
-            $this->writeln('');
-
-            return $value ?: $default;
         }
 
-        if (false !== $shell = $this->getShell()) {
-            $readCmd = $shell === 'csh' ? 'set mypassword = $<' : 'read -r mypassword';
-            $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
-            $value = rtrim(shell_exec($command));
-            $this->writeln('');
+        if (file_exists('/usr/bin/env')) {
+            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
+            foreach (array('bash', 'zsh', 'ksh', 'csh', 'sh') as $sh) {
+                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                    $shell = $sh;
+                    break;
+                }
+            }
 
-            return $value ?: $default;
+            if (isset($shell)) {
+                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
+                $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
+                $output = shell_exec($command);
+
+                if ($output !== null) {
+                    // output a newline to be on par with the regular prompt()
+                    $this->line();
+
+                    return $this->trimAnswer($output);
+                }
+            }
         }
 
-        throw new RuntimeException('Unable to hide the response.');
+        // not able to hide the answer
+        if (!$allowFallback) {
+            throw new \RuntimeException('Could not prompt for input in a secure fashion, aborting');
+        }
+
+        return $this->prompt();
+    }
+
+    private function trimAnswer($str)
+    {
+        return preg_replace('{\r?\n$}D', '', $str);
     }
 
     /**
-     * Input confirmation.
+     * Input comfirmation.
      *
-     * @param string $message
-     * @param string $fgColor
-     * @param string $bgColor
+     * @param string $question
+     * @param bool   $default
      */
     public function confirm($question, $default = false)
     {
         $availableAnswers = [
             'yes' => true,
-            'no'  => false,
-            'y'   => true,
-            'n'   => false,
+            'no' => false,
+            'y' => true,
+            'n' => false,
         ];
 
         $result = null;
@@ -135,35 +240,74 @@ trait InputUtils
             } else {
                 $result = $availableAnswers[$answer];
             }
-        } while (is_null($result));
+        } while (null === $result);
 
         return $availableAnswers[$answer];
     }
 
     /**
-     * Input choice for two only.
+     * Select a choice.
+     *
+     * @param string $question
+     * @param array  $available
+     * @param string $choice1
+     * @param string $choice2
+     * @param string $errormessage
      */
-    public function choice($question, array $available, $choice1, $choice2, $errormessage = 'No Choice Selected')
+    public function choice($question, $default = null, $choices = null, $errorMessage = '')
     {
-        $availableAnswers = $available;
+        $defaultPrompt = $default ? $this->style("[{$default}]", 'green') : '';
+        if ($choices) {
+            $values = $choices ? $choices : $default ?? false;
+        } else {
+            $values = $default ?? '';
+        }
 
-        $default = false;
-        $result = null;
-        do {
-            if ($default) {
-                $suffix = $this->style('[', 'dark_gray').$this->style(ucwords($choice1), 'green').$this->style("/{$choice2}]", 'dark_gray');
-            } else {
-                $suffix = $this->style("[{$choice1}/", 'dark_gray').$this->style(ucwords($choice2), 'green').$this->style(']', 'dark_gray');
+        return $this->ask($question.' '.$defaultPrompt, $values);
+    }
+
+    protected function isAssoc($array)
+    {
+        return (bool) \count(array_filter(array_keys($array), 'is_string'));
+    }
+
+    /**
+     * Check whether Stty is available or not.
+     *
+     * @return bool
+     */
+    private function hasSttyAvailable()
+    {
+        if (null !== self::$stty) {
+            return self::$stty;
+        }
+        exec('stty 2>&1', $output, $exitcode);
+
+        return self::$stty = $exitcode === 0;
+    }
+
+    /**
+     * Returns a valid unix shell.
+     *
+     * @return string|bool The valid shell name, false in case no valid shell is found
+     */
+    private function getShell()
+    {
+        if (null !== self::$shell) {
+            return self::$shell;
+        }
+        self::$shell = false;
+        if (file_exists('/usr/bin/env')) {
+            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
+            foreach (['bash', 'zsh', 'ksh', 'csh'] as $sh) {
+                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                    self::$shell = $sh;
+                    break;
+                }
             }
-            $answer = $this->ask($question.' '.$suffix) ?: ($default ? $choice1 : $choice2);
+        }
 
-            if (!isset($availableAnswers[$answer])) {
-                $this->error($errormessage);
-            } else {
-                $result = $availableAnswers[$answer];
-            }
-        } while (is_null($result));
-
-        return $availableAnswers[$answer];
+        return self::$shell;
     }
 }

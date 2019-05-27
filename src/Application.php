@@ -15,17 +15,19 @@
  * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
-namespace Radion\Toolbox\ConsoleLite;
+namespace BiuradPHP\Toolbox\ConsoleLite;
 
 use Closure;
 use Exception;
 use InvalidArgumentException;
-use Radion\Toolbox\ConsoleLite\Exception\JetError;
-use Radion\Toolbox\ConsoleLite\Command\CommandList;
+use BiuradPHP\Toolbox\ConsoleLite\Command\CommandList;
+use BiuradPHP\Toolbox\ConsoleLite\Command\CommandAbout;
+use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
 
 class Application
 {
     use Concerns\InputUtils;
+    use Concerns\FileUtils;
 
     protected static $stty;
     protected static $shell;
@@ -38,6 +40,7 @@ class Application
     public $optionsAlias = [];
     public $verbose = false;
     public $color;
+    public $title = null;
 
     protected $filename;
     protected $command;
@@ -47,39 +50,40 @@ class Application
 
     /** @var array PSR-3 compatible foreground color and their prefix, color, output channel */
     protected $foregroundColors = [
-        'black'        => ['', Colors::C_BLACK, STDOUT],
-        'dark_gray'    => ['', Colors::C_DARKGRAY, STDOUT],
-        'blue'         => ['', Colors::C_BLUE, STDOUT],
-        'light_blue'   => ['', Colors::C_LIGHTBLUE, STDOUT],
-        'green'        => ['', Colors::C_GREEN, STDOUT],
-        'light_green'  => ['', Colors::C_LIGHTGREEN, STDOUT],
-        'cyan'         => ['', Colors::C_CYAN, STDOUT],
-        'light_cyan'   => ['', Colors::C_LIGHTCYAN, STDOUT],
-        'red'          => ['', Colors::C_RED, STDERR],
-        'light_red'    => ['', Colors::C_LIGHTRED, STDERR],
-        'purple'       => ['', Colors::C_PURPLE, STDOUT],
+        'black' => ['', Colors::C_BLACK, STDOUT],
+        'dark_gray' => ['', Colors::C_DARKGRAY, STDOUT],
+        'blue' => ['', Colors::C_BLUE, STDOUT],
+        'light_blue' => ['', Colors::C_LIGHTBLUE, STDOUT],
+        'green' => ['', Colors::C_GREEN, STDOUT],
+        'light_green' => ['', Colors::C_LIGHTGREEN, STDOUT],
+        'cyan' => ['', Colors::C_CYAN, STDOUT],
+        'light_cyan' => ['', Colors::C_LIGHTCYAN, STDOUT],
+        'red' => ['', Colors::C_RED, STDERR],
+        'light_red' => ['', Colors::C_LIGHTRED, STDERR],
+        'purple' => ['', Colors::C_PURPLE, STDOUT],
+        'magenta' => ['', Colors::C_MAGENTA, STDOUT],
         'light_purple' => ['', Colors::C_LIGHTPURPLE, STDOUT],
-        'brown'        => ['', Colors::C_BROWN, STDERR],
-        'yellow'       => ['', Colors::C_YELLOW, STDOUT],
-        'light_gray'   => ['', Colors::C_LIGHTGRAY, STDOUT],
-        'white'        => ['', Colors::C_WHITE, STDOUT],
+        'brown' => ['', Colors::C_BROWN, STDERR],
+        'yellow' => ['', Colors::C_YELLOW, STDOUT],
+        'light_gray' => ['', Colors::C_LIGHTGRAY, STDOUT],
+        'white' => ['', Colors::C_WHITE, STDOUT],
     ];
 
     /**
      * Constructor.
      */
-    public function __construct(array $argv = null)
+    public function __construct(string $title = 'Console Lite Application')
     {
-        if (is_null($argv)) {
-            $argv = $GLOBALS['argv'];
-        }
+        $argv = @$GLOBALS['argv'];
+        $this->title = $this->line().$this->writeln($title).$this->line();
+
         // error handlers
-        $this->errorhandle = new JetError();
+        $this->errorhandle = new JetErrorException();
         set_exception_handler([$this, 'handleError']);
         error_reporting(0);
 
         $this->color = new Colors();
-        $this->formatter = new Formatter();
+        $this->formatter = new Formatter($this->color);
         $this->tokens = $argv;
 
         list(
@@ -91,14 +95,50 @@ class Application
         ) = $this->parseArgv($argv);
 
         $this->loadCommands();
-        $this->register(new CommandList);
+        $this->register(new CommandList());
+        $this->register(new CommandAbout());
     }
 
     private function loadCommands()
     {
-        $this->command('hello {name?::Enter a name}', 'Enter your name to start', function ($name) {
+        $this->command('welcome {name?::Enter a name}', 'Enter your name to start', function ($name) {
             $this->block("Hello {$name}, Nice Meeting you, I'm Biurad Slim Lite Console.", 'white', 'black');
         });
+    }
+
+    /**
+     * Gets the name of the application.
+     *
+     * @return string The application name
+     */
+    public function getName()
+    {
+        return $this->title;
+    }
+
+    /**
+     * Sets the application name.
+     *
+     * @param string $name The application name
+     */
+    public function setName($name)
+    {
+        $this->title = $name;
+    }
+
+    /**
+     * Type of instance
+     *
+     * @return bool
+     */
+    public function getType()
+    {
+        if (PHP_SAPI === 'cli') {
+            php_sapi_name().' CLI';
+        }
+        if (PHP_SAPI === 'cgi') {
+            php_sapi_name().' CGI';
+        }
     }
 
     /**
@@ -114,27 +154,27 @@ class Application
             if (!$commandName) {
                 $class = get_class($command);
 
-                throw new InvalidArgumentException("Command '{$class}' must have a name defined in signature");
+                throw new InvalidArgumentException(sprintf('Command %s must have a name defined in signature', $class));
             }
 
             if (!method_exists($command, 'handle')) {
                 $class = get_class($command);
 
-                throw new InvalidArgumentException("Command '{$class}' must have method handle");
+                throw new InvalidArgumentException(sprintf('Command %s must have a method handle', $class));
             }
 
             $command->defineApp($this);
 
             $this->commands[$commandName] = [
-                'handler'     => [$command, 'handle'],
+                'handler' => [$command, 'handle'],
                 'description' => $command->getDescription(),
-                'args'        => $args,
-                'options'     => $options,
+                'args' => $args,
+                'options' => $options,
             ];
-        } catch (\ErrorException $e) {
+        } catch (JetErrorException $e) {
             $class = get_class($command);
 
-            throw new \ErrorException("'{$class}' could not be found", $e->getCode());
+            throw new JetErrorException(sprintf('%s could not be found', $class), $e->getCode());
         }
     }
 
@@ -150,10 +190,10 @@ class Application
         list($commandName, $args, $options) = $this->parseCommand($signature);
 
         $this->commands[$commandName] = [
-            'handler'     => $handler,
+            'handler' => $handler,
             'description' => $description,
-            'args'        => $args,
-            'options'     => $options,
+            'args' => $args,
+            'options' => $options,
         ];
     }
 
@@ -177,18 +217,6 @@ class Application
     public function hasCommand($command)
     {
         return isset($this->commands[$command]) ? $this->commands[$command] : $this->command;
-    }
-
-    /**
-     * Set option for command
-     * 
-     * @param string $key
-     * 
-     * @return mixed
-     */
-    public function setCommand($key)
-    {
-        return array_key_exists($key, $this->commands);
     }
 
     /**
@@ -244,7 +272,7 @@ class Application
 
     /**
      * Set argument.
-     * 
+     *
      * @return mixed
      */
     public function setArgument($key)
@@ -289,12 +317,16 @@ class Application
             return $this->showCommandsLike($command);
         }
 
-        if (array_key_exists('help', $this->options) or $this->shortAlias('h')) {
+        if (array_key_exists('help', $this->options) || $this->shortAlias('h')) {
             return $this->showHelp($command);
         }
 
-        if (array_key_exists('no-color', $this->options) or $this->shortAlias('n')) {
-               $this->color->disable();
+        if (array_key_exists('no-color', $this->options) || $this->shortAlias('n')) {
+            $this->color->disable();
+        }
+
+        if (array_key_exists('color', $this->options)|| $this->shortAlias('c')) {
+            $this->color->enable();
         }
 
         try {
@@ -307,7 +339,7 @@ class Application
             }
 
             call_user_func_array($handler, $arguments);
-        } catch (JetError $e) {
+        } catch (JetErrorException $e) {
             $this->handleError($e);
         }
     }
@@ -325,10 +357,10 @@ class Application
     }
 
     /**
-     * Set option for command
-     * 
+     * Set option for command.
+     *
      * @param string $key
-     * 
+     *
      * @return mixed
      */
     public function setOption($key)
@@ -337,9 +369,10 @@ class Application
     }
 
     /**
-     * Has Option Alias
+     * Has Option Alias.
+     *
      * @param string $key
-     * 
+     *
      * @return mixed
      */
     public function shortAlias($key)
@@ -374,7 +407,12 @@ class Application
     }
 
     /**
-     * Check whether an option has a parameter
+     * Check whether an option has a parameter.
+     *
+     * @param mixed $values
+     * @param bool  $onlyParams
+     *
+     * @return boolean
      */
     public function hasParameterOption($values, $onlyParams = false)
     {
@@ -399,7 +437,13 @@ class Application
     }
 
     /**
-     * Get the parameter for an option
+     * Get the parameter for an option.
+     *
+     * @param mixed $values
+     * @param bool  $default
+     * @param bool  $onlyParams
+     *
+     * @return void
      */
     public function getParameterOption($values, $default = false, $onlyParams = false)
     {
@@ -431,6 +475,10 @@ class Application
 
     /**
      * Get the value of commands.
+     *
+     * @param mixed $name
+     *
+     * @return void
      */
     public function getCommand($name)
     {
@@ -438,18 +486,27 @@ class Application
     }
 
     /**
-     * Write text.
+     * Write in a text.
      *
-     * @param string $message
+     * @param string $messages
      * @param string $fgColor
      * @param string $bgColor
+     * @param array  $context
+     *
+     * @return void
      */
-    public function write($message, $fgColor = null, $bgColor = null, array $context = [])
+    public function write($messages, $fgColor = null, $bgColor = null, array $context = [])
     {
-        if ($fgColor or $bgColor) {
-            $message = $this->color($message, $fgColor, $bgColor, $context);
+        if (!is_iterable($messages)) {
+            $messages = [$this->interpolate($messages)];
         }
-        echo $message;
+
+        foreach ($messages as $message) {
+            if ($fgColor || $bgColor) {
+                $message = $this->color($message, $fgColor, $bgColor, $context);
+            }
+            echo $this->interpolate($message, $context);
+        }
     }
 
     /**
@@ -458,23 +515,28 @@ class Application
      * @param string $message
      * @param string $fgColor
      * @param string $bgColor
+     * @param array  $context
+     *
+     * @return void
      */
     public function writeln($message, $fgColor = null, $bgColor = null, array $context = [])
     {
-        return $this->write($message.PHP_EOL, $fgColor, $bgColor, $context);
+        return $this->write($message, $fgColor, $bgColor, $context).$this->line();
     }
 
     /**
      * Enter a number of empty lines.
      *
-     * @param int $num Number of lines to output
+     * @param int   $num     Number of lines to output
+     * @param bool  $line    draws a formatter line
+     * @param array $context
      *
      * @return void
      */
     public function line(int $num = 1, $line = false, array $context = [])
     {
         // Do it once or more, write with empty string gives us a new line
-        for ($i = 0; $i < $num; $i++) {
+        for ($i = 0; $i < $num; ++$i) {
             if (false === $line) {
                 $this->write(PHP_EOL, null, null, $context);
             } else {
@@ -487,46 +549,47 @@ class Application
      * Write error message.
      *
      * @param string $message
-     * @param string $fgColor
-     * @param string $bgColor
+     * @param string $width
+     * @param bool   $exit
+     *
+     * @return void
      */
-    public function error($message, $width = null, $exit = true)
+    public function error($message, $width = null)
     {
         $this->block($message, 'white', 'red', $width);
-        if ($exit) {
-            exit();
-        }
     }
 
     /**
      * Write sucess message.
      *
      * @param string $message
-     * @param string $fgColor
-     * @param string $bgColor
+     * @param string $width
+     * @param bool   $exit
+     *
+     * @return void
      */
-    public function success($message, $width = null, $exit = true)
+    public function success($message, $width = null)
     {
         $this->block($message, 'white', 'green', $width);
-        if ($exit) {
-            exit();
-        }
     }
 
     /**
-     * Write a backgroundcolor in terminal.
+     * Wraps a text with a line formatter given line breaks.
      *
      * @param string $message
      * @param string $fgColor
      * @param string $bgColor
+     * @param string $width
+     *
+     * @return void
      */
     public function block($message, $fgColor = null, $bgColor = null, $width = null)
     {
+        $this->formatter->getMaxWidth();
         if ($width !== null) {
             $this->formatter->setMaxWidth($width);
-        } else {
-            $this->formatter->getMaxWidth();
         }
+
         $this->line();
         $this->line(1, true);
         $this->formatter->wordwrap(
@@ -538,27 +601,40 @@ class Application
     }
 
     /**
-     * Write a help block
+     * Write a help block.
      *
-     * @param mixed $name is the subject
+     * @param mixed  $name        is the subject
      * @param string $description is the description
+     * @param mixed $nwid is the subject's width
+     * @param mixed $dwid is the description width
+     *
      * @return void
      */
-    public function helpblock($name, $description)
+    public function helpblock($name, $description, $nwid = '25%', $dwid = '*')
     {
-        return $this->writeln('  '.$this->style($name, 'purple').str_repeat(' ', 2 - strlen($name)) . ' -> ' . $description);
+        $this->formatter->setBorder(' -> '); // nice border between colmns
+        $this->write(
+            $this->formatter->format(
+                [$nwid, $dwid], [$name, $description]
+            )
+        );
     }
 
     /**
-     * @param string $fgcolor
+     * Styles an output text.
+     *
      * @param string $message
+     * @param string $fgcolor
+     * @param string $bgcolor
      * @param array  $context
+     *
+     * @return void
      */
     public function color($message, $fgcolor, $bgcolor = null, array $context = [])
     {
         // is this log fgcolor wanted?
         if (!isset($this->foregroundColors[$fgcolor])) {
-            return;
+            throw new InvalidArgumentException(sprintf('Invalid foreground color specified: "%s". Expected one of (%s)', $fgcolor, implode(', ', array_keys($this->foregroundColors))));
         }
 
         /** @var string $prefix */
@@ -570,7 +646,7 @@ class Application
         }
 
         $message = $this->interpolate($message, $context);
-        $this->color->ptln($prefix.$message, $color, $bgcolor, $channel);
+        $this->color->println($prefix.$message, strtolower($color), strtolower($bgcolor), $channel);
     }
 
     /**
@@ -579,10 +655,12 @@ class Application
      * @param string $text
      * @param string $fgColor
      * @param string $bgColor
+     *
+     * @return string
      */
     public function style($text, $fgColor, $bgColor = null)
     {
-        return $this->color->wrap($text, $fgColor, $bgColor);
+        return $this->color->wrap($text, strtolower($fgColor), strtolower($bgColor));
     }
 
     /**
@@ -637,9 +715,9 @@ class Application
                 }
 
                 $args[$argName] = [
-                    'is_array'    => !empty($matchArgs['arr'][$i]),
+                    'is_array' => !empty($matchArgs['arr'][$i]),
                     'is_optional' => !empty($matchArgs['optional'][$i]) || !empty($default),
-                    'default'     => $default ?: null,
+                    'default' => $default ?: null,
                     'description' => $description,
                 ];
             }
@@ -656,9 +734,9 @@ class Application
                 }
                 $options[$optName] = [
                     'is_valuable' => !empty($matchOptions['valuable'][$i]),
-                    'default'     => $default ?: null,
+                    'default' => $default ?: null,
                     'description' => $description,
-                    'alias'       => $matchOptions['alias'][$i] ?: null,
+                    'alias' => $matchOptions['alias'][$i] ?: null,
                 ];
             }
         }
@@ -719,155 +797,27 @@ class Application
     }
 
     /**
-     * Parses the given arguments for known options and command.
-     *
-     * The given $args array should NOT contain the executed file as first item anymore! The $args
-     * array is stripped from any options and possible command. All found otions can be accessed via the
-     * getOpt() function
-     *
-     * Note that command options will overwrite any global options with the same name
-     *
-     * This is run from CLI automatically and usually does not need to be called directly
-     *
-     * @throws Exception
-     */
-    protected function parseOptions()
-    {
-        $non_opts = [];
-
-        $argc = count($this->arguments);
-        for ($i = 0; $i < $argc; $i++) {
-            $arg = $this->arguments[$i];
-
-            // The special element '--' means explicit end of options. Treat the rest of the arguments as non-options
-            // and end the loop.
-            if ($arg == '--') {
-                $non_opts = array_merge($non_opts, array_slice($this->arguments, $i + 1));
-                break;
-            }
-
-            // '-' is stdin - a normal argument
-            if ($arg == '-') {
-                $non_opts = array_merge($non_opts, array_slice($this->arguments, $i));
-                break;
-            }
-
-            // first non-option
-            if ($arg[
-                0] != '-') {
-                $non_opts = array_merge($non_opts, array_slice($this->arguments, $i));
-                break;
-            }
-
-            // long option
-            if (strlen($arg) > 1 && $arg[
-                1] == '-') {
-                $arg = explode('=', substr($arg, 2), 2);
-                $opt = array_shift($arg);
-                $val = array_shift($arg);
-
-                if (!isset($this->commands['options'][$opt])) {
-                    throw new Exception("No such option '$opt'");
-                }
-
-                // argument required?
-                if ($this->commands['options'][$opt]['needsarg']) {
-                    if (is_null($val) && $i + 1 < $argc && !preg_match('/^--?[\w]/', $this->arguments[$i + 1])) {
-                        $val = $this->arguments[++$i];
-                    }
-                    if (is_null($val)) {
-                        throw new Exception("Option $opt requires an argument");
-                    }
-                    $this->options[$opt] = $val;
-                } else {
-                    $this->options[$opt] = true;
-                }
-
-                continue;
-            }
-
-            // short option
-            $opt = substr($arg, 1);
-            if (!isset($this->setup[$this->command]['short'][$opt])) {
-                throw new Exception("No such option $arg");
-            } else {
-                $opt = $this->setup[$this->command]['short'][$opt]; // store it under long name
-            }
-
-            // argument required?
-            if ($this->commands['options'][$opt]['needsarg']) {
-                $val = null;
-                if ($i + 1 < $argc && !preg_match('/^--?[\w]/', $this->arguments[$i + 1])) {
-                    $val = $this->arguments[++$i];
-                }
-                if (is_null($val)) {
-                    throw new Exception("Option $arg requires an argument");
-                }
-                $this->options[$opt] = $val;
-            } else {
-                $this->options[$opt] = true;
-            }
-        }
-
-        // parsing is now done, update args array
-        $this->arguments = $non_opts;
-
-        // if not done yet, check if first argument is a command and reexecute argument parsing if it is
-        if (!$this->command && $this->arguments && isset($this->setup[$this->arguments[0]])) {
-            // it is a command!
-            $this->command = array_shift($this->arguments);
-            $this->parseOptions(); // second pass
-        }
-    }
-
-    /**
      * Check whether OS is windows.
      *
      * @return bool
      */
     public function isWindows()
     {
-        return '\\' === DIRECTORY_SEPARATOR;
+        if (defined('PHP_WINDOWS_VERSION_BUILD') || PHP_OS === 'WINNT') {
+            return '\\' === DIRECTORY_SEPARATOR;
+        }
     }
 
     /**
-     * Check whether Stty is available or not.
+     * Checks whether OS is Linux.
      *
      * @return bool
      */
-    private function hasSttyAvailable()
+    public function isLinux()
     {
-        if (null !== self::$stty) {
-            return self::$stty;
+        if (PHP_OS === 'Linux') {
+            return '/' === DIRECTORY_SEPERATOR;
         }
-        exec('stty 2>&1', $output, $exitcode);
-
-        return self::$stty = $exitcode === 0;
-    }
-
-    /**
-     * Returns a valid unix shell.
-     *
-     * @return string|bool The valid shell name, false in case no valid shell is found
-     */
-    private function getShell()
-    {
-        if (null !== self::$shell) {
-            return self::$shell;
-        }
-        self::$shell = false;
-        if (file_exists('/usr/bin/env')) {
-            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
-            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-            foreach (['bash', 'zsh', 'ksh', 'csh'] as $sh) {
-                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
-                    self::$shell = $sh;
-                    break;
-                }
-            }
-        }
-
-        return self::$shell;
     }
 
     /**
@@ -971,7 +921,6 @@ class Application
      */
     protected function showCommandsLike($keyword)
     {
-        $commands = $this->getRegisteredCommands();
         $matchedCommands = $this->getCommandsLike($keyword);
 
         if (count($matchedCommands) === 1) {
@@ -979,8 +928,9 @@ class Application
             $values = array_values($matchedCommands);
             $name = array_shift($keys);
             $command = array_shift($values);
+            $this->line();
             if ($this->confirm($this->line()." Command '{$keyword}' is not available. Did you mean '{$name}'?")) {
-                passthru('php '.$this->getFilename()." {$name}");
+                $this->execute($name);
             } else {
                 $commandList = $this->commands['list']['handler'];
                 $commandList(count($matchedCommands) ? $keyword : null);
@@ -1029,17 +979,17 @@ class Application
         }
 
         $pad = $maxLen + 3;
-        $this->writeln(PHP_EOL.' '.$command['description'].PHP_EOL);
+        $this->writeln(' '.$command['description']);
         $this->writeln($this->color->wrap(' Usage:', 'purple'));
         $this->writeln('');
         $this->writeln('  '.implode(' ', $usageArgs));
         $this->writeln('');
-        $this->writeln($this->color->wrap(' Arguments: ', 'purple').PHP_EOL);
+        $this->writeln($this->color->wrap(' Arguments: ', 'purple'));
         foreach ($displayArgs as $argName => $argDesc) {
             $this->writeln('  '.$this->color->wrap($argName, 'green').str_repeat(' ', $pad - strlen($argName)).$argDesc);
         }
         $this->writeln('');
-        $this->writeln($this->color->wrap(' Options: ', 'purple').PHP_EOL);
+        $this->writeln($this->color->wrap(' Options: ', 'purple'));
         foreach ($displayOpts as $optName => $optDesc) {
             $this->writeln('  '.$this->color->wrap($optName, 'green').str_repeat(' ', $pad - strlen($optName)).$optDesc);
         }
@@ -1063,7 +1013,7 @@ class Application
             return $value ? 'true' : 'false';
         } elseif (is_string($value)) {
             return '"'.addslashes($value).'"';
-        } elseif (is_null($value)) {
+        } elseif (null === $value) {
             return 'null';
         } else {
             return $value;
@@ -1080,8 +1030,10 @@ class Application
         //$exception = new Exception;
         $indent = str_repeat(' ', 2);
         //$class = get_class($exception);
-        if (get_class($exception) === 'Radion\Toolbox\ConsoleLite\Exception\JetError') {
-            $class = 'Application Error';
+        if (get_class($exception) === 'BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException') {
+            $class = 'Application Eexception';
+        } elseif (get_class($exception) === 'BiuradPHP\Toolbox\ConsoleLite\Exception\DeprecatedException') {
+            $class = 'Deprecated Exception';
         } else {
             $class = get_class($exception);
         }
@@ -1094,7 +1046,7 @@ class Application
 
         $this->block($indent."Whoops! You got an {$class}"."\n\n".$indent.$this->style($message, 'light_red'));
 
-        $this->writeln(
+        $this->write(
             $indent.'File: '.$filepath($file)
                 .PHP_EOL
                 .$indent.'Line: '.$line

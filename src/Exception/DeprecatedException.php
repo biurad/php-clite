@@ -14,20 +14,11 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite\Exception;
+namespace BiuradPHP\Toolbox\ConsoleLite\Exception;
 
 /**
- * JetError.
- *
- * The error handle for both comandline and
- * coming soon web version.
- *
- * @author Divine Niiquaye <hello@biuhub.net>
+ * Hands all deprecated options and commands.
  */
-class JetError extends \Exception implements \Throwable
+class DeprecatedException extends \RuntimeException
 {
-    public function run()
-    {
-        set_exception_handler('Radion\Toolbox\ConsoleLite\Application::exception');
-    }
 }

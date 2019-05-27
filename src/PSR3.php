@@ -14,7 +14,7 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite;
+namespace BiuradPHP\Toolbox\ConsoleLite;
 
 use Psr\Log\LoggerInterface;
 

@@ -14,7 +14,7 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite;
+namespace BiuradPHP\Toolbox\ConsoleLite;
 
 use Exception;
 
@@ -29,46 +29,48 @@ use Exception;
 class Colors
 {
     // these constants make IDE autocompletion easier, but color names can also be passed as strings
-    const C_RESET = 'reset';
-    const C_BLACK = 'black';
-    const C_DARKGRAY = 'darkgray';
-    const C_BLUE = 'blue';
-    const C_LIGHTBLUE = 'lightblue';
-    const C_GREEN = 'green';
-    const C_LIGHTGREEN = 'lightgreen';
-    const C_CYAN = 'cyan';
-    const C_LIGHTCYAN = 'lightcyan';
-    const C_RED = 'red';
-    const C_LIGHTRED = 'lightred';
-    const C_PURPLE = 'purple';
+    const C_RESET       = 'reset';
+    const C_BLACK       = 'black';
+    const C_DARKGRAY    = 'darkgray';
+    const C_BLUE        = 'blue';
+    const C_LIGHTBLUE   = 'lightblue';
+    const C_GREEN       = 'green';
+    const C_LIGHTGREEN  = 'lightgreen';
+    const C_CYAN        = 'cyan';
+    const C_LIGHTCYAN   = 'lightcyan';
+    const C_RED         = 'red';
+    const C_LIGHTRED    = 'lightred';
+    const C_PURPLE      = 'purple';
+    const C_MAGENTA     = 'magenta';
     const C_LIGHTPURPLE = 'lightpurple';
-    const C_BROWN = 'brown';
-    const C_YELLOW = 'yellow';
-    const C_LIGHTGRAY = 'lightgray';
-    const C_WHITE = 'white';
+    const C_BROWN       = 'brown';
+    const C_YELLOW      = 'yellow';
+    const C_LIGHTGRAY   = 'lightgray';
+    const C_WHITE       = 'white';
 
     /** @var array known color names */
     protected $colors = [
-        self::C_RESET       => "\33[0m",
-        self::C_BLACK       => "\33[0;30m",
-        self::C_DARKGRAY    => "\33[1;30m",
-        self::C_BLUE        => "\33[0;34m",
-        self::C_LIGHTBLUE   => "\33[1;34m",
-        self::C_GREEN       => "\33[0;32m",
-        self::C_LIGHTGREEN  => "\33[1;32m",
-        self::C_CYAN        => "\33[0;36m",
-        self::C_LIGHTCYAN   => "\33[1;36m",
-        self::C_RED         => "\33[0;31m",
-        self::C_LIGHTRED    => "\33[1;31m",
-        self::C_PURPLE      => "\33[0;35m",
-        self::C_LIGHTPURPLE => "\33[1;35m",
-        self::C_BROWN       => "\33[0;33m",
-        self::C_YELLOW      => "\33[1;33m",
-        self::C_LIGHTGRAY   => "\33[0;37m",
-        self::C_WHITE       => "\33[1;37m",
+        self::C_RESET       => "0",
+        self::C_BLACK       => "0;30",
+        self::C_DARKGRAY    => "1;30",
+        self::C_BLUE        => "0;34",
+        self::C_LIGHTBLUE   => "1;34",
+        self::C_GREEN       => "0;32",
+        self::C_LIGHTGREEN  => "1;32",
+        self::C_CYAN        => "0;36",
+        self::C_LIGHTCYAN   => "1;36",
+        self::C_RED         => "0;31",
+        self::C_LIGHTRED    => "1;31",
+        self::C_PURPLE      => "0;35",
+        self::C_MAGENTA     => "0;35",
+        self::C_LIGHTPURPLE => "1;35",
+        self::C_BROWN       => "0;33",
+        self::C_YELLOW      => "1;33",
+        self::C_LIGHTGRAY   => "0;37",
+        self::C_WHITE       => "1;37",
     ];
 
-    protected $foregroundColors = [
+    private static $foregroundColors = [
         'black'        => self::C_BLACK,
         'dark_gray'    => self::C_DARKGRAY,
         'blue'         => self::C_BLUE,
@@ -80,6 +82,7 @@ class Colors
         'red'          => self::C_RED,
         'light_red'    => self::C_LIGHTRED,
         'purple'       => self::C_PURPLE,
+        'magenta'      => self::C_MAGENTA,
         'light_purple' => self::C_LIGHTPURPLE,
         'brown'        => self::C_BROWN,
         'yellow'       => self::C_YELLOW,
@@ -88,7 +91,7 @@ class Colors
         'default'      => self::C_RESET,
     ];
 
-    protected $backgroundColors = [
+    private static $backgroundColors = [
         'black'      => '40',
         'red'        => '41',
         'green'      => '42',
@@ -119,6 +122,11 @@ class Colors
 
             return;
         }
+        if (!$this->isWindows()) {
+            $this->enable();
+
+            return;
+        }
     }
 
     /**
@@ -127,6 +135,10 @@ class Colors
     public function enable()
     {
         $this->enabled = true;
+        $file = getcwd().DIRECTORY_SEPARATOR.'color.config';
+        $handle = fopen($file, 'w');
+        fwrite($handle, 'true');
+        fclose($handle);
     }
 
     /**
@@ -135,6 +147,10 @@ class Colors
     public function disable()
     {
         $this->enabled = false;
+        $file = getcwd().DIRECTORY_SEPARATOR.'color.config';
+        $handle = fopen($file, 'w');
+        fwrite($handle, 'false');
+        fclose($handle);
     }
 
     /**
@@ -142,7 +158,30 @@ class Colors
      */
     public function isEnabled()
     {
-        return $this->enabled;
+        
+        if (@file_get_contents(getcwd().DIRECTORY_SEPARATOR.'color.config') == 'true') {
+            return $this->enabled;
+        }
+    }
+
+    public static function removecolor($string)
+    {
+        $string = preg_replace("/\033\[[^m]*m/", '', $string);
+        @unlink(getcwd().DIRECTORY_SEPARATOR.'color.config');
+
+        return $string;
+    }
+
+    /**
+     * Check whether OS is windows.
+     *
+     * @return bool
+     */
+    public function isWindows()
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD') || PHP_OS === 'WINNT') {
+            return '\\' === DIRECTORY_SEPARATOR;
+        }
     }
 
     /**
@@ -154,7 +193,7 @@ class Colors
      *
      * @throws Exception
      */
-    public function ptln($line, $color, $bgColor = null, $channel = STDOUT)
+    public function println($line, $color, $bgColor = null, $channel = STDOUT)
     {
         $this->set($color, $bgColor);
         fwrite($channel, rtrim($line));
@@ -175,8 +214,8 @@ class Colors
     public function wrap($text, $fgColor, $bgColor = null)
     {
         // Check if given foreground color found
-        if (isset($this->foregroundColors[$fgColor])) {
-            $coloredString = $this->foregroundColors[$fgColor];
+        if (isset(static::$foregroundColors[$fgColor])) {
+            $coloredString = static::$foregroundColors[$fgColor];
         }
 
         // Add string and end coloring
@@ -189,7 +228,7 @@ class Colors
      *
      * @param string $color one of the available color names
      *
-     * @throws Exception
+     * @throws \InvalidArgumentException When the color names isn't defined
      *
      * @return string color code
      */
@@ -200,18 +239,18 @@ class Colors
         }
 
         $coloredString = '';
-        if (!isset($this->colors[$color])) {
-            throw new Exception("No such color $color");
-        }
 
         // Check if given background color found
-        if (isset($this->backgroundColors[$bgColor])) {
-            $coloredString .= "\033[".$this->backgroundColors[$bgColor].'m';
+        if (isset(static::$backgroundColors[$bgColor])) {
+            $coloredString .= sprintf("\033[%sm", static::$backgroundColors[$bgColor]);
         }
 
         // Check if given foreground color found
         if (isset($this->colors[$color])) {
-            $coloredString .= $this->colors[$color];
+            $coloredString .= sprintf("\033[%sm", $this->colors[$color]);
+        }
+        if (!isset($this->colors[$color])) {
+            throw new \InvalidArgumentException(sprintf('Invalid foreground color specified: "%s". Expected one of (%s)', $color, implode(', ', array_keys(static::$foregroundColors))));
         }
 
         //return $this->colors[$color];
@@ -240,6 +279,6 @@ class Colors
      */
     public function reset($channel = STDOUT)
     {
-        $this->set('reset', $channel);
+        $this->set('reset', null, $channel);
     }
 }

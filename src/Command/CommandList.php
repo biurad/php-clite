@@ -14,9 +14,9 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite\Command;
+namespace BiuradPHP\Toolbox\ConsoleLite\Command;
 
-use Radion\Toolbox\ConsoleLite\Command;
+use BiuradPHP\Toolbox\ConsoleLite\Command;
 
 class CommandList extends Command
 {
@@ -28,22 +28,23 @@ class CommandList extends Command
     {
         $count = 0;
         $maxLen = 0;
-        $time = microtime(true);
 
         if ($keyword) {
             $commands = $this->getCommandsLike($keyword);
-            $this->block(" Here are commands like '{$keyword}': ", 'white', 'magenta');
+            $this->block("Here are commands like '{$keyword}': ", 'white', 'magenta');
+            $this->line();
         } else {
             $commands = $this->getRegisteredCommands();
-            $this->writeln($this->color('Console Lite', 'green').$this->line(2).'Read more at https://tuts.biurad.ml/consolelite.md');
-            if (PHP_OS == 'Linux') {
+            $this->writeln('Read more at https://tuts.biurad.ml/consolelite.md');
+            if ($this->isLinux()) {
                 $this->block('The Application is been runned in Linux environment', 'light_cyan', 'black');
             } elseif ($this->isWindows()) {
                 $this->block('The Application is been runned in Windows environment', 'light_cyan', 'black');
             } else {
                 $this->block('The Application is been runned in an Undetermined environment', 'light_cyan', 'black');
             }
-            $this->writeln($this->color(' Available Commands: ', 'purple').$this->line());
+            $this->writeln($this->color('Available Commands: ', 'purple'));
+            $this->line();
         }
 
         ksort($commands);
@@ -63,10 +64,9 @@ class CommandList extends Command
             $this->writeln('');
         }
 
-        $this->line(1,true);
-        $this->writeln(" Type '".$this->style('php '.$this->getFilename().' [command] --help or -h', 'purple')."' for usage information");
-        $this->line();
-        $this->writeln(" Type '".$this->style('php '.$this->getFilename().' [command] --no-color or -n', 'purple')."' to disable color");
-        $this->line(1,true);
+        $this->writeln('Default Usage: ', 'magenta');
+        $this->helpblock(' Type: php '.basename($this->getFilename()).' [command] --help or -h', 'For usage information about a command', '*', '50%');
+        $this->helpblock(' Type: php '.basename($this->getFilename()).' [command] --no-color or -n', 'To disable color', '*', '50%');
+        $this->helpblock(' Type: php '.basename($this->getFilename()).' [command] --color or -c', 'To enable color', '*', '50%');
     }
 }

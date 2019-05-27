@@ -14,9 +14,9 @@
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 
-namespace Radion\Toolbox\ConsoleLite;
+namespace BiuradPHP\Toolbox\ConsoleLite;
 
-use Exception;
+use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
 
 /**
  * Class TableFormatter.
@@ -24,6 +24,7 @@ use Exception;
  * Output text in multiple columns
  *
  * @author Andreas Gohr <andi@splitbrain.org>
+ * @author Divine Niiquaye <hello@biuhub.net>
  */
 class Formatter
 {
@@ -31,10 +32,16 @@ class Formatter
     protected $border = ' ';
 
     /** @var int the terminal width */
-    protected $max = 74;
+    protected $max = 95;
 
     /** @var Colors for coloring output */
     protected $colors;
+
+    private $value;
+    private $options = [
+        'rowspan' => 1,
+        'colspan' => 1,
+    ];
 
     /**
      * TableFormatter constructor.
@@ -86,7 +93,7 @@ class Formatter
      */
     public function getMaxWidth()
     {
-        return $this->max;
+        return (int) $this->max;
     }
 
     /**
@@ -96,7 +103,7 @@ class Formatter
      */
     public function setMaxWidth($max)
     {
-        $this->max = $max;
+        $this->max = (int) $max;
     }
 
     /**
@@ -131,7 +138,7 @@ class Formatter
      *
      * @param array $columns
      *
-     * @throws Exception
+     * @throws JetErrorException
      *
      * @return int[]
      */
@@ -159,11 +166,11 @@ class Formatter
                     $fluid = $idx;
                     continue;
                 } else {
-                    throw new Exception('Only one fluid column allowed!');
+                    throw new JetErrorException('Only one fluid column allowed!');
                 }
             }
 
-            throw new Exception("unknown column format $col");
+            throw new JetErrorException("unknown column format $col");
         }
 
         $alloc = $fixed;
@@ -184,7 +191,7 @@ class Formatter
 
         $remain = $this->max - $alloc;
         if ($remain < 0) {
-            throw new Exception('Wanted column widths exceed available space');
+            throw new JetErrorException('Wanted column widths exceed available space');
         }
 
         // assign remaining space
@@ -204,7 +211,7 @@ class Formatter
      * @param string[] $texts   list of texts for each column
      * @param array    $colors  A list of color names to use for each column. use empty string for default
      *
-     * @throws Exception
+     * @throws JetErrorException
      *
      * @return string
      */
@@ -225,7 +232,7 @@ class Formatter
 
         $last = count($columns) - 1;
         $out = '';
-        for ($i = 0; $i < $maxlen; $i++) {
+        for ($i = 0; $i < $maxlen; ++$i) {
             foreach ($columns as $col => $width) {
                 if (isset($wrapped[$col][$i])) {
                     $val = $wrapped[$col][$i];
@@ -266,7 +273,7 @@ class Formatter
 
         $pad = $len - $strlen;
 
-        return $string.str_pad('', $pad, ' ');
+        return $string.str_pad(' ', $pad, ' ');
     }
 
     /**
@@ -312,7 +319,7 @@ class Formatter
      *
      * @return string
      *
-     * @link http://stackoverflow.com/a/4988494
+     * @see http://stackoverflow.com/a/4988494
      */
     public function wordwrap($str, $width = 75, $break = "\n", $cut = false)
     {
@@ -346,5 +353,124 @@ class Formatter
         }
 
         return implode($break, $lines);
+    }
+
+    /**
+     * Returns the cell value.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Gets number of colspan.
+     *
+     * @return int
+     */
+    public function getColspan()
+    {
+        return (int) $this->options['colspan'];
+    }
+
+    /**
+     * Gets number of rowspan.
+     *
+     * @return int
+     */
+    public function getRowspan()
+    {
+        return (int) $this->options['rowspan'];
+    }
+
+    // Static Methods
+
+    /**
+     * Format Memory.
+     *
+     * @param mixed $memory
+     *
+     * @return string
+     */
+    public static function formatMemory($memory)
+    {
+        if ($memory >= 1024 * 1024 * 1024) {
+            return sprintf('%.1f GiB', $memory / 1024 / 1024 / 1024);
+        }
+
+        if ($memory >= 1024 * 1024) {
+            return sprintf('%.1f MB', $memory / 1024 / 1024);
+        }
+
+        if ($memory >= 1024) {
+            return sprintf('%d KiB', $memory / 1024);
+        }
+
+        return sprintf('%d Bytes', $memory);
+    }
+
+    public static function formatTime($secs)
+    {
+        static $timeFormats = [
+            [0, '< 1 second'],
+            [1, '1 second'],
+            [2, 'seconds', 1],
+            [60, '1 minute'],
+            [120, 'minutes', 60],
+            [3600, '1 hour'],
+            [7200, 'hours', 3600],
+            [86400, '1 day'],
+            [172800, 'days', 86400],
+        ];
+
+        foreach ($timeFormats as $index => $format) {
+            if ($secs >= $format[0]) {
+                if ((isset($timeFormats[$index + 1]) && $secs < $timeFormats[$index + 1][0])
+                    || $index == \count($timeFormats) - 1
+                ) {
+                    if (2 == \count($format)) {
+                        return $format[1];
+                    }
+
+                    return floor($secs / $format[2]).' '.$format[1];
+                }
+            }
+        }
+    }
+
+    /**
+     * Format Path.
+     *
+     * @param string $path
+     * @param string $baseDir
+     *
+     * @return string
+     */
+    public static function formatPath(string $path, string $baseDir): string
+    {
+        return preg_replace('~^'.preg_quote($baseDir, '~').'~', '.', $path);
+    }
+
+    /**
+     * Format FileSize.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public static function formatFileSize(string $path): string
+    {
+        if (is_file($path)) {
+            $size = filesize($path) ?: 0;
+        } else {
+            $size = 0;
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::FOLLOW_SYMLINKS)) as $file) {
+                $size += $file->getSize();
+            }
+        }
+
+        return self::formatMemory($size);
     }
 }
