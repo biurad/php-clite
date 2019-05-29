@@ -1,4 +1,5 @@
 language: php
+sudo: false
 
 cache:
   directories:
@@ -8,9 +9,11 @@ php:
   - 7.1
   - 7.2
   - 7.3
+  - master
 
-before_install:
-  - composer self-update
-
-install:
-  - composer update
+matrix:
+  allow_failures:
+    - php: master
+  fast_finish: true
+  
+script: composer update
