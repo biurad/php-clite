@@ -239,7 +239,7 @@ By default the CLI classes registers two error or exception handlers.
             throw new \BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException('Test option not allowed');
         }
         // This throws a deprecated exception.
-        if ($this->hasOption('--error')) {
+        if ($this->hasOption('error')) {
             return \BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException::deprecated('--error', '--replace', 'option');
         }
 
@@ -266,7 +266,7 @@ and wrapping will fail, breaking your texts).
 
 <br />
 
-## Table Formatter
+## Formatter
 
 The `Formatter` class allows you to align texts in multiple columns. It tries to figure out the available
 terminal width on its own. It can be overwritten by setting a `COLUMNS` environment variable.
