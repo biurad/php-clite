@@ -3,6 +3,19 @@ build:
     php:
       version: 7.2
 
+  nodes:
+        analysis:
+            project_setup:
+                override:
+                    - 'true'
+            tests:
+                override:
+                    - php-scrutinizer-run
+                    -
+                        command: phpcs-run
+                        use_website_config: false
+        tests: true
+
 before_commands:
     - 'composer update'
 
@@ -15,7 +28,7 @@ tools:
     php_hhvm: false
     php_mess_detector: true
     sensiolabs_security_checker: true
-    
+
     php_analyzer:
         config:
             parameter_reference_check: { enabled: false }
@@ -140,7 +153,7 @@ checks:
         fix_doc_comments: true
         fix_php_opening_tag: true
         fix_identation_4spaces: true
-        
+
         encourage_shallow_comparison: true
         duplication: true
         deprecated_code_usage: true

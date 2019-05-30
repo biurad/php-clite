@@ -28,7 +28,7 @@ class JetErrorException extends \Exception implements \Throwable
 {
     const OPTION = 'option';
     const COMMAND = 'command';
-    
+
     public static function deprecated($name = null, $replace = null, $type = null)
     {
         if (self::OPTION === $type) {
