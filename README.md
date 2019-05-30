@@ -1,4 +1,4 @@
-> This library strongly inspired by [Symfony Console](https://symfony.com/doc/current/components/console.html)
+> This library was strongly inspired by [Symfony Console](https://symfony.com/doc/current/components/console.html)
 
 <div id="autoloadder-logo" align="center">
     <h1 style="font-weight:bold">Console Lite - BiuradPHP Toolbox</h1>
