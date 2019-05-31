@@ -1,27 +1,27 @@
 <?php
 
-/**
- * The Biurad Library Autoload via cli
- * -----------------------------------------------.
- *
- * This is an extensible library used to load classes
- * from namespaces and files just like composer.
- * But this is built in procedural php.
- *
- * @see ReadMe.md to know more about how to load your
- * classes via command line.
- *
- * @author Divine Niiquaye <hello@biuhub.net>
- */
+ /**
+  * The Biurad Library Autoload via cli
+  * -----------------------------------------------.
+  *
+  * This is an extensible library used to load classes
+  * from namespaces and files just like composer.
+  * But this is built in procedural php.
+  *
+  * @see ReadMe.md to know more about how to load your
+  * classes via command line.
+  *
+  * @author Divine Niiquaye <hello@biuhub.net>
+  */
 
- namespace Radion\Toolbox\ConsoleLite\Test;
+namespace Radion\Toolbox\ConsoleLite\Test;
 
 use PHPUnit\Framework\TestCase;
 use Radion\Toolbox\ConsoleLite\Application;
 use Radion\Toolbox\ConsoleLite\Command;
 
 class CommandTest extends TestCase
- {
+{
     protected static $fixturesPath;
 
     public function testConstructor()
@@ -37,7 +37,7 @@ class CommandTest extends TestCase
         $application = new Application();
         $command = new Command();
         $command->defineApp($application);
-        $this->assertEquals($application, $command->getApp() , '->defineApp() sets the current application');
+        $this->assertEquals($application, $command->getApp(), '->defineApp() sets the current application');
         $this->assertEquals($application->showHelp($command), $command->showHelp($command));
     }
 
@@ -56,4 +56,4 @@ class CommandTest extends TestCase
         $this->assertEquals($command, $ret, '->setArgument() implements a fluent interface');
         $this->assertTrue($command->hasArgument('foo'), '->setArgument() adds an argument to the command');
     }
- }
+}

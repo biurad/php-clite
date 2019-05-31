@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The Biurad Library Autoload via cli
+ * The Biurad Library Autoload via cli.
  *
  * This is an extensible library used to load classes
  * from namespaces and files just like composer.
@@ -41,8 +41,9 @@ trait FileUtils
     /**
      * Get relative path between target and base path. If path isn't relative, return full path.
      *
-     * @param  string  $path
-     * @param  string  $base
+     * @param string $path
+     * @param string $base
+     *
      * @return string
      */
     public function getRelativePathDotDot($path, $base)
@@ -68,7 +69,7 @@ trait FileUtils
             }
         }
         $pathParts[] = $lastPart;
-        $path = str_repeat('../', count($baseParts)) . implode('/', $pathParts);
+        $path = str_repeat('../', count($baseParts)).implode('/', $pathParts);
 
         return '' === $path
         || strpos($path, '/') === 0
@@ -76,15 +77,15 @@ trait FileUtils
             ? "./$path" : $path;
     }
 
-
     /**
      * Get the contents of a file.
      *
-     * @param  string  $path
-     * @param  bool  $lock
-     * @return string
+     * @param string $path
+     * @param bool   $lock
      *
      * @throws \BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException
+     *
+     * @return string
      */
     public function f_get($path, $lock = false)
     {
@@ -98,7 +99,8 @@ trait FileUtils
     /**
      * Get contents of a file with shared access.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function f_sharedGet($path)
@@ -127,9 +129,10 @@ trait FileUtils
     /**
      * Write the contents of a file.
      *
-     * @param  string  $path
-     * @param  string  $contents
-     * @param  bool  $lock
+     * @param string $path
+     * @param string $contents
+     * @param bool   $lock
+     *
      * @return int|bool
      */
     public function f_put($path, $contents, $lock = false)
@@ -138,68 +141,74 @@ trait FileUtils
     }
 
     /**
-     * Scan a directory
+     * Scan a directory.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_scan($path)
-     {
-         return \scandir($path);
-     }
+    public function f_scan($path)
+    {
+        return \scandir($path);
+    }
 
-     /**
-     * Is directory
+    /**
+     * Is directory.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_is_dir($path)
-     {
-         return \is_dir($path);
-     }
+    public function f_is_dir($path)
+    {
+        return \is_dir($path);
+    }
 
-     /**
-     * Is File
+    /**
+     * Is File.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_is_file($path)
-     {
-         return \is_file($path);
-     }
+    public function f_is_file($path)
+    {
+        return \is_file($path);
+    }
 
-     /**
-     * Is dirname
+    /**
+     * Is dirname.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_dirname($path)
-     {
-         return \dirname($path);
-     }
+    public function f_dirname($path)
+    {
+        return \dirname($path);
+    }
 
-     /**
-     * File Exists
+    /**
+     * File Exists.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_file_exists($path)
-     {
-         return \file_exists($path);
-     }
+    public function f_file_exists($path)
+    {
+        return \file_exists($path);
+    }
 
-     /**
-     * File Exists
+    /**
+     * File Exists.
      *
      * @param   string  $path
+     *
      * @return string
      */
-     public function f_basename($path)
-     {
-         return \basename($path);
-     }
+    public function f_basename($path)
+    {
+        return \basename($path);
+    }
 }

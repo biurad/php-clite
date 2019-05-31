@@ -29,45 +29,45 @@ use Exception;
 class Colors
 {
     // these constants make IDE autocompletion easier, but color names can also be passed as strings
-    const C_RESET       = 'reset';
-    const C_BLACK       = 'black';
-    const C_DARKGRAY    = 'darkgray';
-    const C_BLUE        = 'blue';
-    const C_LIGHTBLUE   = 'lightblue';
-    const C_GREEN       = 'green';
-    const C_LIGHTGREEN  = 'lightgreen';
-    const C_CYAN        = 'cyan';
-    const C_LIGHTCYAN   = 'lightcyan';
-    const C_RED         = 'red';
-    const C_LIGHTRED    = 'lightred';
-    const C_PURPLE      = 'purple';
-    const C_MAGENTA     = 'magenta';
+    const C_RESET = 'reset';
+    const C_BLACK = 'black';
+    const C_DARKGRAY = 'darkgray';
+    const C_BLUE = 'blue';
+    const C_LIGHTBLUE = 'lightblue';
+    const C_GREEN = 'green';
+    const C_LIGHTGREEN = 'lightgreen';
+    const C_CYAN = 'cyan';
+    const C_LIGHTCYAN = 'lightcyan';
+    const C_RED = 'red';
+    const C_LIGHTRED = 'lightred';
+    const C_PURPLE = 'purple';
+    const C_MAGENTA = 'magenta';
     const C_LIGHTPURPLE = 'lightpurple';
-    const C_BROWN       = 'brown';
-    const C_YELLOW      = 'yellow';
-    const C_LIGHTGRAY   = 'lightgray';
-    const C_WHITE       = 'white';
+    const C_BROWN = 'brown';
+    const C_YELLOW = 'yellow';
+    const C_LIGHTGRAY = 'lightgray';
+    const C_WHITE = 'white';
 
     /** @var array known color names */
     protected $colors = [
-        self::C_RESET       => "0",
-        self::C_BLACK       => "0;30",
-        self::C_DARKGRAY    => "1;30",
-        self::C_BLUE        => "0;34",
-        self::C_LIGHTBLUE   => "1;34",
-        self::C_GREEN       => "0;32",
-        self::C_LIGHTGREEN  => "1;32",
-        self::C_CYAN        => "0;36",
-        self::C_LIGHTCYAN   => "1;36",
-        self::C_RED         => "0;31",
-        self::C_LIGHTRED    => "1;31",
-        self::C_PURPLE      => "0;35",
-        self::C_MAGENTA     => "0;35",
-        self::C_LIGHTPURPLE => "1;35",
-        self::C_BROWN       => "0;33",
-        self::C_YELLOW      => "1;33",
-        self::C_LIGHTGRAY   => "0;37",
-        self::C_WHITE       => "1;37",
+        self::C_RESET       => '0',
+        self::C_BLACK       => '0;30',
+        self::C_DARKGRAY    => '1;30',
+        self::C_BLUE        => '0;34',
+        self::C_LIGHTBLUE   => '1;34',
+        self::C_GREEN       => '0;32',
+        self::C_LIGHTGREEN  => '1;32',
+        self::C_CYAN        => '0;36',
+        self::C_LIGHTCYAN   => '1;36',
+        self::C_RED         => '0;31',
+        self::C_LIGHTRED    => '1;31',
+        self::C_PURPLE      => '0;35',
+        self::C_MAGENTA     => '0;35',
+        self::C_LIGHTPURPLE => '1;35',
+        self::C_BROWN       => '0;33',
+        self::C_YELLOW      => '1;33',
+        self::C_LIGHTGRAY   => '0;37',
+        self::C_WHITE       => '1;37',
     ];
 
     private static $foregroundColors = [
@@ -158,7 +158,6 @@ class Colors
      */
     public function isEnabled()
     {
-        
         if (@file_get_contents(getcwd().DIRECTORY_SEPARATOR.'color.config') == 'true') {
             return $this->enabled;
         }
@@ -203,7 +202,7 @@ class Colors
     /**
      * Returns the given text wrapped in the appropriate color and reset code.
      *
-     * @param string $text  string to wrap
+     * @param string $text    string to wrap
      * @param string $fgColor one of the available color names
      * @param string $bgColor one of the avialiable background color
      *

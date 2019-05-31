@@ -51,7 +51,7 @@ class CommandAbout extends Command
         $header_section = [
             ['About', 'See the ReadMe.md for more info'],
             ['Version', $this::VERSION.' latest built'],
-            ['Copyright', 'Divine Niiquaye hello@biuhub.net']
+            ['Copyright', 'Divine Niiquaye hello@biuhub.net'],
         ];
         foreach ($header_section as $first) {
             $this->write($this->formatter->format(
@@ -93,7 +93,7 @@ class CommandAbout extends Command
             ['JSon PHP EXT', \extension_loaded('json') ? 'true' : 'false'],
             ['OPcache PHP EXT', \extension_loaded('Zend OPcache') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'],
             ['APCu PHP EXT', \extension_loaded('apcu') && filter_var(ini_get('apc.enabled'), FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'],
-            ['Xdebug PHP EXT', \extension_loaded('xdebug') ? 'true' : 'false']
+            ['Xdebug PHP EXT', \extension_loaded('xdebug') ? 'true' : 'false'],
         ];
         foreach ($app_section as $second) {
             $this->write($this->formatter->format(
