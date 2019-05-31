@@ -232,7 +232,7 @@ class Formatter
 
         $last = count($columns) - 1;
         $out = '';
-        for ($i = 0; $i < $maxlen; ++$i) {
+        for ($i = 0; $i < $maxlen; $i++) {
             foreach ($columns as $col => $width) {
                 if (isset($wrapped[$col][$i])) {
                     $val = $wrapped[$col][$i];

@@ -132,9 +132,9 @@ trait InputUtils
      *                            will be done using the regular prompt() function, otherwise a
      *                            \RuntimeException is thrown
      *
-     * @return string
-     *
      * @throws RuntimeException on failure to prompt, unless $allowFallback is true
+     *
+     * @return string
      */
     public function hiddenPrompt($allowFallback = true)
     {
@@ -177,7 +177,7 @@ trait InputUtils
         if (file_exists('/usr/bin/env')) {
             // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
             $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-            foreach (array('bash', 'zsh', 'ksh', 'csh', 'sh') as $sh) {
+            foreach (['bash', 'zsh', 'ksh', 'csh', 'sh'] as $sh) {
                 if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
                     $shell = $sh;
                     break;
@@ -221,9 +221,9 @@ trait InputUtils
     {
         $availableAnswers = [
             'yes' => true,
-            'no' => false,
-            'y' => true,
-            'n' => false,
+            'no'  => false,
+            'y'   => true,
+            'n'   => false,
         ];
 
         $result = null;

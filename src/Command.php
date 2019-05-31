@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The Biurad Library Autoload via cli
+ * The Biurad Library Autoload via cli.
  *
  * This is an extensible library which has all the commands methods to load classes
  * from namespaces and files just like AutoLoadOne.
@@ -25,9 +25,8 @@ namespace BiuradPHP\Toolbox\ConsoleLite;
  * This draws a line around a text.
  * @method void helpblock(mixed $name, mixed $description, mixed $namewidth, mixed $deswidth)
  * This has a seperator between message and description.
- * 
+ *
  * use percentage or '*' to define custom width.
- * 
  * @method void color(mixed $message,  string $fgcolor,string  $bgcolor)
  * Use this inbetween $this->write(), $this->writeln, $this->block, $this->helpblock.
  * @method void style(mixed $text, string $fgColor, string $bgColor)
@@ -38,11 +37,12 @@ namespace BiuradPHP\Toolbox\ConsoleLite;
  * Alternatively to $this->write(), a line break is ended with the output.
  * @method void success(mixed $message, int $width)
  * This outputs a text in success format on commandline interface.
+ *
  * @see ReadMe.md file that came with the project.
  *
  * @method void defineTitle(mixed $name, string $output,string $color, string $bgcolor)
  * This Defines and prints the title in commandline interface.
- * 
+ *
  * $output = 'writeln' or $output = 'write' or $output = 'block'.
  * @method mixed getTitle()
  * This get's the set title.
@@ -87,7 +87,7 @@ namespace BiuradPHP\Toolbox\ConsoleLite;
  * Confirm an input.
  * @method bool choice(mixed $question, string $default, array $choices, string $errorMessage)
  * Allows only two choices for now. just like true or false.
- * 
+ *
  * @author Divine Niiquaye <hello@biuhub.net>
  */
 abstract class Command

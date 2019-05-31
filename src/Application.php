@@ -17,12 +17,12 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
+use BiuradPHP\Toolbox\ConsoleLite\Command\CommandAbout;
+use BiuradPHP\Toolbox\ConsoleLite\Command\CommandList;
+use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
 use Closure;
 use Exception;
 use InvalidArgumentException;
-use BiuradPHP\Toolbox\ConsoleLite\Command\CommandList;
-use BiuradPHP\Toolbox\ConsoleLite\Command\CommandAbout;
-use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
 
 class Application
 {
@@ -50,23 +50,23 @@ class Application
 
     /** @var array PSR-3 compatible foreground color and their prefix, color, output channel */
     protected $foregroundColors = [
-        'black' => ['', Colors::C_BLACK, STDOUT],
-        'dark_gray' => ['', Colors::C_DARKGRAY, STDOUT],
-        'blue' => ['', Colors::C_BLUE, STDOUT],
-        'light_blue' => ['', Colors::C_LIGHTBLUE, STDOUT],
-        'green' => ['', Colors::C_GREEN, STDOUT],
-        'light_green' => ['', Colors::C_LIGHTGREEN, STDOUT],
-        'cyan' => ['', Colors::C_CYAN, STDOUT],
-        'light_cyan' => ['', Colors::C_LIGHTCYAN, STDOUT],
-        'red' => ['', Colors::C_RED, STDERR],
-        'light_red' => ['', Colors::C_LIGHTRED, STDERR],
-        'purple' => ['', Colors::C_PURPLE, STDOUT],
-        'magenta' => ['', Colors::C_MAGENTA, STDOUT],
+        'black'        => ['', Colors::C_BLACK, STDOUT],
+        'dark_gray'    => ['', Colors::C_DARKGRAY, STDOUT],
+        'blue'         => ['', Colors::C_BLUE, STDOUT],
+        'light_blue'   => ['', Colors::C_LIGHTBLUE, STDOUT],
+        'green'        => ['', Colors::C_GREEN, STDOUT],
+        'light_green'  => ['', Colors::C_LIGHTGREEN, STDOUT],
+        'cyan'         => ['', Colors::C_CYAN, STDOUT],
+        'light_cyan'   => ['', Colors::C_LIGHTCYAN, STDOUT],
+        'red'          => ['', Colors::C_RED, STDERR],
+        'light_red'    => ['', Colors::C_LIGHTRED, STDERR],
+        'purple'       => ['', Colors::C_PURPLE, STDOUT],
+        'magenta'      => ['', Colors::C_MAGENTA, STDOUT],
         'light_purple' => ['', Colors::C_LIGHTPURPLE, STDOUT],
-        'brown' => ['', Colors::C_BROWN, STDERR],
-        'yellow' => ['', Colors::C_YELLOW, STDOUT],
-        'light_gray' => ['', Colors::C_LIGHTGRAY, STDOUT],
-        'white' => ['', Colors::C_WHITE, STDOUT],
+        'brown'        => ['', Colors::C_BROWN, STDERR],
+        'yellow'       => ['', Colors::C_YELLOW, STDOUT],
+        'light_gray'   => ['', Colors::C_LIGHTGRAY, STDOUT],
+        'white'        => ['', Colors::C_WHITE, STDOUT],
     ];
 
     /**
@@ -127,7 +127,7 @@ class Application
     }
 
     /**
-     * Type of instance
+     * Type of instance.
      *
      * @return bool
      */
@@ -166,10 +166,10 @@ class Application
             $command->defineApp($this);
 
             $this->commands[$commandName] = [
-                'handler' => [$command, 'handle'],
+                'handler'     => [$command, 'handle'],
                 'description' => $command->getDescription(),
-                'args' => $args,
-                'options' => $options,
+                'args'        => $args,
+                'options'     => $options,
             ];
         } catch (JetErrorException $e) {
             $class = get_class($command);
@@ -190,10 +190,10 @@ class Application
         list($commandName, $args, $options) = $this->parseCommand($signature);
 
         $this->commands[$commandName] = [
-            'handler' => $handler,
+            'handler'     => $handler,
             'description' => $description,
-            'args' => $args,
-            'options' => $options,
+            'args'        => $args,
+            'options'     => $options,
         ];
     }
 
@@ -325,7 +325,7 @@ class Application
             $this->color->disable();
         }
 
-        if (array_key_exists('color', $this->options)|| $this->shortAlias('c')) {
+        if (array_key_exists('color', $this->options) || $this->shortAlias('c')) {
             $this->color->enable();
         }
 
@@ -412,7 +412,7 @@ class Application
      * @param mixed $values
      * @param bool  $onlyParams
      *
-     * @return boolean
+     * @return bool
      */
     public function hasParameterOption($values, $onlyParams = false)
     {
@@ -536,7 +536,7 @@ class Application
     public function line(int $num = 1, $line = false, array $context = [])
     {
         // Do it once or more, write with empty string gives us a new line
-        for ($i = 0; $i < $num; ++$i) {
+        for ($i = 0; $i < $num; $i++) {
             if (false === $line) {
                 $this->write(PHP_EOL, null, null, $context);
             } else {
@@ -605,8 +605,8 @@ class Application
      *
      * @param mixed  $name        is the subject
      * @param string $description is the description
-     * @param mixed $nwid is the subject's width
-     * @param mixed $dwid is the description width
+     * @param mixed  $nwid        is the subject's width
+     * @param mixed  $dwid        is the description width
      *
      * @return void
      */
@@ -715,9 +715,9 @@ class Application
                 }
 
                 $args[$argName] = [
-                    'is_array' => !empty($matchArgs['arr'][$i]),
+                    'is_array'    => !empty($matchArgs['arr'][$i]),
                     'is_optional' => !empty($matchArgs['optional'][$i]) || !empty($default),
-                    'default' => $default ?: null,
+                    'default'     => $default ?: null,
                     'description' => $description,
                 ];
             }
@@ -734,9 +734,9 @@ class Application
                 }
                 $options[$optName] = [
                     'is_valuable' => !empty($matchOptions['valuable'][$i]),
-                    'default' => $default ?: null,
+                    'default'     => $default ?: null,
                     'description' => $description,
-                    'alias' => $matchOptions['alias'][$i] ?: null,
+                    'alias'       => $matchOptions['alias'][$i] ?: null,
                 ];
             }
         }
