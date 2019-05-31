@@ -46,7 +46,7 @@ $application = new Application();
 $application->run();
 ```
 
-Console Lite has a totally different approach in building console commands, not similar to Symfony Console. This was done in order to make it light weight.
+Console Lite has a totally different approach in building console commands, not similar to Symfony Console but similar to Laravel Artisan. This was done in order to make it light weight.
 
 You can register the commands using two different ways:
 
