@@ -13,6 +13,7 @@
 [![Build Status](https://travis-ci.org/biurad/Console-lite.svg?branch=master)](https://travis-ci.org/biurad/Console-lite)
 [![Total Downloads](https://poser.pugx.org/biurad/consolelite/downloads)](https://packagist.org/packages/biurad/consolelite)
 [![composer.lock](https://poser.pugx.org/biurad/consolelite/composerlock)](https://packagist.org/packages/biurad/consolelite)
+[![StyleCI](https://github.styleci.io/repos/186709012/shield?branch=master)](https://github.styleci.io/repos/186709012)
 [![BCH compliance](https://bettercodehub.com/edge/badge/biurad/Autoloader?branch=master)](https://bettercodehub.com/)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e08ae4d55074443f8dd4fd96042c36e0)](https://app.codacy.com/app/biustudio/Console-lite?utm_source=github.com&utm_medium=referral&utm_content=biurad/Console-lite&utm_campaign=Badge_Grade_Dashboard)
 
