@@ -3,13 +3,11 @@
 
 use BiuradPHP\Toolbox\ConsoleLite\Application;
 
-if (file_exists(__DIR__ . '/../autoload.php')) {
-    require(__DIR__ . '/../autoload.php');
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require(__DIR__ . '/../vendor/autoload.php');
 } else {
     throw new \RuntimeException('You need to download "biurad/autoloader" from github.com');
 }
-
-define('BASEPATH', realpath(dirname(__FILE__)) . '/');
 
 if (!class_exists(Application::class)) {
     throw new \RuntimeException('You need to add "biurad/autoloader" as a Composer dependency or download from https://autoloader.biurad.ml.');
