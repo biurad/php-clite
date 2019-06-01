@@ -6,10 +6,11 @@ build:
             tests:
                 override:
                     - php-scrutinizer-run --enable-security-analysis
-                    - command: phpunit --coverage-clover=my-coverage-file
-                coverage:
-                  file: my-coverage-file
-                  format: php-clover
+                    - command: phpunit --coverage-clover=my-coverage.xml
+                      coverage:
+                        file: coverage.xml   # <- Set this to where we find the coverage data.
+                                                    #    The path is relative to the current directory.
+                        format: clover
   environment:
     php:
       version: 7.2
