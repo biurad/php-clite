@@ -1,4 +1,15 @@
 build:
+  nodes:
+        analysis:
+            project_setup:
+                override: true
+            tests:
+                override:
+                    - php-scrutinizer-run --enable-security-analysis
+                    - command: phpunit --coverage-clover=my-coverage-file
+            coverage:
+              file: my-coverage-file
+              format: php-clover
   environment:
     php:
       version: 7.2
