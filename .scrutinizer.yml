@@ -9,7 +9,7 @@ build:
                     - command: phpunit --coverage-clover=my-coverage-file
             coverage:
               file: my-coverage-file
-              format: php-clover
+              format: clover
   environment:
     php:
       version: 7.2
