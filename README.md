@@ -1,6 +1,6 @@
 > This library was strongly inspired by [Symfony Console](https://symfony.com/doc/current/components/console.html)
 
-<div id="autoloadder-logo" align="center">
+<div id="autoloader-logo" align="center">
     <h1 style="font-weight:bold">Console Lite - BiuradPHP Toolbox</h1>
     <br />
     <img src="https://raw.githubusercontent.com/biurad/Console-lite/master/logo.png" alt="Autoloader Jet Logo" height="200px" width="400px"/>
@@ -29,6 +29,7 @@ Just run this composer command:
 ```bash
 composer require biurad/consolelite
 ```
+
 # Quickstart
 
 ## Creating a Console Application
@@ -39,10 +40,9 @@ First, you need to create a PHP script to define the console application:
 #!/usr/bin/env php
 <?php
 // application.php
+use BiuradPHP\Toolbox\ConsoleLite\Application;
 
 require __DIR__.'/vendor/autoload.php';
-
-use BiuradPHP\Toolbox\ConsoleLite\Application;
 
 $application = new Application();
 
@@ -56,19 +56,19 @@ Console Lite has a totally different approach in building console commands, not 
 You can register the commands using two different ways:
 
 1. ```php
-    // ...
-    $application->register(new GenerateCommand());
+   // ...
+   $application->register(new GenerateCommand());
     ```
 
 2. ```php
-    // ...
-    $application->command('hello', 'Enter your name to start', function () {
+   // ...
+   $application->command('hello', 'Enter your name to start', function () {
         $this->writeln('Hello World');
-    });
+   });
 
 ## Console Command Example
 
-### This example is to print out a name without creating a class file:
+### This example is to print out a name without creating a class file
 
 ```php
 #!/usr/bin/env php
@@ -90,7 +90,8 @@ $application->command('hello {name}', 'Enter your name', function($name) {
 $application->run();
 ```
 
-### This example is to print out a name creating a class file:
+### This example is to print out a name creating a class file
+
 ```php
 <?php
 
@@ -145,10 +146,6 @@ $application->register(new NameCommand);
 $application->run();
 ```
 
-<br />
-
-# Features
-
 ### Show Help
 
 You can show help by putting `--help` or `-h` for each command. For example:
@@ -173,13 +170,11 @@ You can disable color by putting `--no-color` or `-n` for each command. For exam
 php console hello --no-color
 ```
 
-<br />
-
 # Command Usage and Options
 
 The command has a powerful property called signature, this contains all the commands, options and arguements.
 
-## The basic usage is simple:
+## The basic usage is simple
 
 - Create a `class` and extend it to `BiuradPHP\Toolbox\ConsoleLite\Command`.
 
@@ -187,65 +182,88 @@ The command has a powerful property called signature, this contains all the comm
 
 - Implement the `properties` method and register options, arguments, commands and set help texts
 
-    - ```php
-        protected $description = 'Enter a description'; // add a general description.
-        ```
+  - Implementing decription to command, add the following to the protected property $signature or method `command` of Application class.
+  
+    ```php
+    protected $description = 'Enter a description'; // add a general description.
+      ```
 
-    - ```php
-        protected $signature = 'hello'; // add a command.
-        ```
+    ```php
+    <?php
+    // application.php
+    use BiuradPHP\Toolbox\ConsoleLite\Application;
 
-    - Implementing options, add the following to the protected property $signature.
-        ```php
-        protected $signature = 'hello {--option} {--anotheroption}'; // the '--' represents an option.
-        ```
+    require __DIR__.'/vendor/autoload.php';
 
-    - Implementing options has an input, add the following to the protected property $signature.
-        ```php
-        protected $signature = 'hello {--option=} {--anotheroption=}'; // the '=' represents an option has an input.
-        ```
+    $app = Application;
+    $app->command('hello', 'This is a description'/** add a general description to the second parameter. */, function () {
+        $this->writeln('Hello World');
+    });
+      ```
 
-    - Implementing arguements, add the following to the protected property $signature.
-        ```php
-        protected $signature = 'hello {arguement} {anotherarguement}'; // this represents an argument.
-        ```
+  - Implementing add command, the protected proterty $signature holds the command, same applies to Application method `command`.
+  
+    ```php
+    protected $signature = 'hello'; // add a command.
+      ```
 
-    - Implementing description for options and arguements, add the following to the protected property $signature.
-        ```php
-        protected $signature = 'hello {arguement::Description} {--option::Description} {--option=::Description}'; // the '::' represents a description.
-        ```
+  - Implementing options, add the following to the protected property $signature.
+  
+      ```php
+    protected $signature = 'hello {--option} {--anotheroption}'; // the '--' represents an option.
+      ```
 
-    - > NB: This applies to `command` method in Application class.
+  - Implementing options has an input, add the following to the protected property $signature.
+  
+      ```php
+    protected $signature = 'hello {--option=} {--anotheroption=}'; // the '=' represents an option has an input.
+      ```
 
-- Implement the `handle` method and do your business logic there
-    - Open the file Command.php in folder `src` and find out the methods to use from there.
+  - Implementing arguements, add the following to the protected property $signature.
+  
+      ```php
+    protected $signature = 'hello {arguement} {anotherarguement}'; // this represents an argument.
+      ```
 
-<br />
+  - Implementing description for options and arguements, add the following to the protected property $signature.
+  
+      ```php
+    protected $signature = 'hello {arguement::Description} {--option::Description} {--option=::Description}'; // the '::' represents a description.
+      ```
+
+- > NB: This applies to `command` method in Application class.
+
+- Implement the `handle` method and do your business logic there.
+
+  - Open the file Command.php in folder `src` and find out the methods to use from there.
 
 ## Exceptions
 
 By default the CLI classes registers two error or exception handlers.
 
-* Application Exception
+- Application Exception
    To use the Application Exception, use example:
+
    ```php
     #!/usr/bin/env php
     <?php
 
     use BiuradPHP\Toolbox\ConsoleLite\Application;
+    use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
 
     require __DIR__.'/vendor/autoload.php';
 
-    $application = new Application
+    $application = new Application;
 
     $application->command('exception {--test} {--error} {--replace}', 'This is an exception test', function () {
         // This throws an application exception.
         if ($this->hasOption('test')) {
-            throw new \BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException('Test option not allowed');
+            throw new JetErrorException('Test option not allowed');
         }
+
         // This throws a deprecated exception.
         if ($this->hasOption('error')) {
-            return \BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException::deprecated('--error', '--replace', 'option');
+            throw new JetErrorException::deprecated('--error', '--replace', 'option');
         }
 
         $this->block('This is an Exception test');
@@ -253,8 +271,6 @@ By default the CLI classes registers two error or exception handlers.
 
     $application->run();
    ```
-
-<br />
 
 ## Colored output
 
@@ -268,8 +284,6 @@ and three for background color.
 The formatter allows coloring full columns. To use that mechanism pass an array of colors as third parameter to
 its `format()` method. Please note that you can not pass colored texts in the second parameters (text length calculation
 and wrapping will fail, breaking your texts).
-
-<br />
 
 ## Formatter
 
@@ -296,8 +310,6 @@ column to adjust for different terminal widths.
 
 The formatter is used for the automatic help screen accessible when calling your script with ``-h`` or ``--help``.
 
-<br />
-
 ## PSR-3 Logging
 
 The CLI class is a fully PSR-3 compatible logger (printing colored log data to STDOUT and STDERR). This is useful when
@@ -306,9 +318,7 @@ you call backend code from your CLI that expects a Logger instance to produce an
 To use this ability simply inherit from `BiuradPHP\Toolbox\ConsoleLite\PSR3` instead of `BiuradPHP\Toolbox\ConsoleLite\Command`, then pass `$this`
 as the logger instance. Be sure you have the suggested `psr/log` composer package installed.
 
-<br />
-
 # License
 
-* [MIT](LICENSE)
-* [Divine Niiquaye](https://instagram.com/legendborn_gh)
+- [MIT](LICENSE)
+- [Divine Niiquaye](https://instagram.com/legendborn_gh)
