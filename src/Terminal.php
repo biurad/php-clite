@@ -14,13 +14,13 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
-use JsonSchema\Validator;
-use Seld\JsonLint\JsonParser;
-use UnexpectedValueException;
-use Seld\JsonLint\ParsingException;
+use BiuradPHP\Toolbox\ConsoleLite\Concerns\Silencer;
 use BiuradPHP\Toolbox\FilePHP\FileHandler;
 use JsonSchema\Exception\ValidationException;
-use BiuradPHP\Toolbox\ConsoleLite\Concerns\Silencer;
+use JsonSchema\Validator;
+use Seld\JsonLint\JsonParser;
+use Seld\JsonLint\ParsingException;
+use UnexpectedValueException;
 
 /**
  * ConsoleLite Terminal.
@@ -355,13 +355,14 @@ class Terminal
 
     /**
      * Write a Sprintf message.
-     * 
-     * Does not support color, 
+     *
+     * Does not support color,
      * use style() function inside it for styles.
      *
-     * @param string $message
+     * @param string       $message
      * @param array|string $args
      * @param array|string $_
+     *
      * @return void
      */
     public function writeSprint(string $message, $args, $_ = null)
@@ -377,11 +378,11 @@ class Terminal
      */
     public function isRunningOS400()
     {
-        $checks = array(
+        $checks = [
             \function_exists('php_uname') ? php_uname('s') : '',
             getenv('OSTYPE'),
             PHP_OS,
-        );
+        ];
 
         return false !== stripos(implode(';', $checks), 'OS400');
     }
@@ -548,7 +549,7 @@ class Terminal
         $buffer = '';
         $noescape = true;
 
-        for ($i = 0; $i < $strLen; ++$i) {
+        for ($i = 0; $i < $strLen; $i++) {
             $char = substr($json, $i, 1);
 
             if ('"' === $char && $noescape) {
@@ -594,12 +595,12 @@ class Terminal
             if (':' === $char) {
                 $char .= ' ';
             } elseif ('}' === $char || ']' === $char) {
-                --$pos;
+                $pos--;
                 $prevChar = substr($json, $i - 1, 1);
 
                 if ('{' !== $prevChar && '[' !== $prevChar) {
                     $result .= $newLine;
-                    for ($j = 0; $j < $pos; ++$j) {
+                    for ($j = 0; $j < $pos; $j++) {
                         $result .= $indentStr;
                     }
                 } else {
@@ -613,10 +614,10 @@ class Terminal
                 $result .= $newLine;
 
                 if ('{' === $char || '[' === $char) {
-                    ++$pos;
+                    $pos++;
                 }
 
-                for ($j = 0; $j < $pos; ++$j) {
+                for ($j = 0; $j < $pos; $j++) {
                     $result .= $indentStr;
                 }
             }
@@ -655,6 +656,7 @@ class Terminal
      * This only loads a json file.
      *
      * @param string|null $file
+     *
      * @return void
      */
     public function loadFile(?string $file = null)
@@ -722,10 +724,10 @@ class Terminal
             $schemaFile = 'file://'.$schemaFile;
         }
 
-        $schemaData = (object) array('$ref' => $schemaFile);
+        $schemaData = (object) ['$ref' => $schemaFile];
 
         $schemaData->additionalProperties = true;
-        $schemaData->required = array();
+        $schemaData->required = [];
 
         $validator = new Validator();
         $validator->check($data, $schemaData);
@@ -737,6 +739,7 @@ class Terminal
             }
 
             $e = preg_replace('/(?<=.{10})(.+)(?=.{10})/', '...', $content);
+
             throw new ValidationException('"'.$e.'" does not match the expected JSON schema '.$errors);
         }
 
@@ -781,10 +784,10 @@ class Terminal
         return $this->getFilehandler()->getInstance($destination)->put(
             $this->json_encode([
                 'application' => $application,
-                'generated' => $date,
-                'version' => $version,
-                'stuble' => ['config' => $stuble],
-                'compile' => ['config' => $phar, 'pack' => $pack, 'unpack' => $unpack],
+                'generated'   => $date,
+                'version'     => $version,
+                'stuble'      => ['config' => $stuble],
+                'compile'     => ['config' => $phar, 'pack' => $pack, 'unpack' => $unpack],
             ])
         );
     }

@@ -67,10 +67,10 @@ class CommandList extends Command
             $this->writeln('Default Options:', 'purple');
             $this->newLine();
             $displayOpts = [
-                '-h, --help' => 'Displays help and usage info for a command',
+                '-h, --help'  => 'Displays help and usage info for a command',
                 '-v, --debug' => 'Displays the hidden debug messages',
-                '--ansi' => 'Forces color to display on terminal',
-                '--no-ansi' => 'Removes colors from the output on terminal',
+                '--ansi'      => 'Forces color to display on terminal',
+                '--no-ansi'   => 'Removes colors from the output on terminal',
             ];
             $this->helpblock($displayOpts);
 
@@ -89,7 +89,9 @@ class CommandList extends Command
 
         foreach ($commands as $name => $command) {
             // if no commands matched or we just matched namespaces
-            $expr = preg_replace_callback('{([^:]+|)}', function ($matches) { return preg_quote($matches[1]).'[^:]*'; }, $name);
+            $expr = preg_replace_callback('{([^:]+|)}', function ($matches) {
+                return preg_quote($matches[1]).'[^:]*';
+            }, $name);
             if (\count(preg_grep('{^'.$expr.'$}i', $commands)) < 1) {
                 if (false !== $pos = strrpos($name, ':')) {
                     // check if a namespace exists and contains commands

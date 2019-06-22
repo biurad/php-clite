@@ -108,7 +108,7 @@ abstract class Command
      * @param string|array $message
      * @param array|string $context
      */
-    public function debug($message, $context = array())
+    public function debug($message, $context = [])
     {
         $this->writeDebug($message, $context ?: false);
     }
@@ -120,7 +120,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function error($message, $context = array())
+    public function error($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, 'light_red');
@@ -141,7 +141,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function warning($message, $context = array())
+    public function warning($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, 'light_yellow');
@@ -159,7 +159,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function notice($message, $context = array())
+    public function notice($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, 'yellow');
@@ -177,7 +177,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function emergency($message, $context = array())
+    public function emergency($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, 'red');
@@ -198,7 +198,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function alert($message, $context = array())
+    public function alert($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, 'cyan');
@@ -218,7 +218,7 @@ abstract class Command
      * @param string $message
      * @param array  $context
      */
-    public function critical($message, $context = array())
+    public function critical($message, $context = [])
     {
         if ($context === 'writeln') {
             return $this->writeln($message, ['light_red', 'bold']);

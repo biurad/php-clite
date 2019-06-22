@@ -17,10 +17,10 @@ namespace BiuradPHP\Toolbox\ConsoleLite\Interfaces;
 interface ConsoleInterface
 {
     /**
-     * Register a closure route command
+     * Register a closure route command.
      *
-     * @param string  $signature   command signature
-     * @param string  $description command description
+     * @param string   $signature   command signature
+     * @param string   $description command description
      * @param \Closure $handler     command handler
      */
     public function command(string $signature, string $description, \Closure $handler);

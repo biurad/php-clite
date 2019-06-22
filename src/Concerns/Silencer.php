@@ -27,13 +27,14 @@ class Silencer
     /**
      * @var int[] Unpop stack
      */
-    private static $stack = array();
+    private static $stack = [];
 
     /**
      * Suppresses given mask or errors.
      *
-     * @param  int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
-     * @return int      The old error reporting level.
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     *
+     * @return int The old error reporting level.
      */
     public static function suppress($mask = null)
     {
@@ -81,6 +82,7 @@ class Silencer
         } catch (\Exception $e) {
             // Use a finally block for this when requirements are raised to PHP 5.5
             self::restore();
+
             throw $e;
         }
     }

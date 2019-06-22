@@ -15,8 +15,8 @@
 namespace BiuradPHP\Toolbox\ConsoleLite\Commands;
 
 use BiuradPHP\Toolbox\ConsoleLite\Command;
-use BiuradPHP\Toolbox\ConsoleLite\Compile\PharConfig;
 use BiuradPHP\Toolbox\ConsoleLite\Compile\PharCompiler;
+use BiuradPHP\Toolbox\ConsoleLite\Compile\PharConfig;
 use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ConsoleLiteException;
 
 /*
@@ -110,7 +110,7 @@ class CommandPhar extends Command
                     while ($i <= $total) {
                         $this->showProgress($i, $total, '🔨', 49);
                         usleep(30000);
-                        ++$i;
+                        $i++;
                     }
                     $this->showProgress($total, $total, 'Completed', 49);
 
@@ -121,11 +121,11 @@ class CommandPhar extends Command
 
                 $phar_info = [
                     'Source Directory: ' => is_array($directory) ? implode(', ', array_values($directory)) : $directory,
-                    'PHAR Name: ' => $phar_file,
-                    'Phar Size ' => $this->getFileHandler()->getInstance($phar_name)->size(),
-                    'Index Script: ' => 'phar://'."$phar_file/$index",
-                    'Version ' => $version,
-                    'Process: ' => $done,
+                    'PHAR Name: '        => $phar_file,
+                    'Phar Size '         => $this->getFileHandler()->getInstance($phar_name)->size(),
+                    'Index Script: '     => 'phar://'."$phar_file/$index",
+                    'Version '           => $version,
+                    'Process: '          => $done,
                 ];
                 $this->newLine(2);
                 $this->helpblock($phar_info);
@@ -154,8 +154,8 @@ class CommandPhar extends Command
 
                 $phar_info = [
                     'Extracted Directory: ' => is_array($extract_to) ? implode(', ', array_values($extract_to)) : $extract_to,
-                    'Version ' => $version,
-                    'Process: ' => $un_done,
+                    'Version '              => $version,
+                    'Process: '             => $un_done,
                 ];
                 $this->newLine(2);
                 $this->helpblock($phar_info);

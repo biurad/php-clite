@@ -14,9 +14,9 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLiteTest;
 
-use PHPUnit\Framework\TestCase;
 use BiuradPHP\Toolbox\ConsoleLite\Application;
 use BiuradPHP\Toolbox\ConsoleLiteTest\fixtures\FooCommand;
+use PHPUnit\Framework\TestCase;
 
 class ApplicationTest extends TestCase
 {
@@ -39,7 +39,7 @@ class ApplicationTest extends TestCase
     public function testRegister()
     {
         $application = new Application();
-        $application->register(new FooCommand);
+        $application->register(new FooCommand());
         $command = $application->hasCommand('foo:bar1') ? 'foo:bar1' : null;
 
         $this->assertEquals('foo:bar1', $command, '->register() registers a new command');
@@ -76,7 +76,7 @@ class ApplicationTest extends TestCase
 
     public function testDisableDecorated()
     {
-        $output =  new Application();
+        $output = new Application();
         $output->getColors()->disable();
 
         $this->assertFalse($output->getColors()->isEnabled(), 'disableDecorated() sets the un-decorated flag --no-ansi');

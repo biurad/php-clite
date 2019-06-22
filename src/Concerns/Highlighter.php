@@ -17,7 +17,7 @@ namespace BiuradPHP\Toolbox\ConsoleLite\Concerns;
 use BiuradPHP\Toolbox\ConsoleLite\Colors;
 
 /**
- * ConsoleLite Highlighter
+ * ConsoleLite Highlighter.
  *
  * This class is orignally from Jakub Onderka.
  * Used to read php files and more in the
@@ -28,32 +28,33 @@ use BiuradPHP\Toolbox\ConsoleLite\Colors;
  */
 class Highlighter
 {
-    const TOKEN_DEFAULT = 'token_default',
-        TOKEN_COMMENT = 'token_comment',
-        TOKEN_STRING = 'token_string',
-        TOKEN_HTML = 'token_html',
-        TOKEN_KEYWORD = 'token_keyword';
+    const TOKEN_DEFAULT = 'token_default';
+    const TOKEN_COMMENT = 'token_comment';
+    const TOKEN_STRING = 'token_string';
+    const TOKEN_HTML = 'token_html';
+    const TOKEN_KEYWORD = 'token_keyword';
 
-    const ACTUAL_LINE_MARK = 'actual_line_mark',
-        LINE_NUMBER = 'line_number';
+    const ACTUAL_LINE_MARK = 'actual_line_mark';
+    const LINE_NUMBER = 'line_number';
 
     /** @var ConsoleColor */
     private $color;
 
     /** @var array */
-    private $defaultTheme = array(
-        self::TOKEN_STRING => 'green',
+    private $defaultTheme = [
+        self::TOKEN_STRING  => 'green',
         self::TOKEN_COMMENT => ['dark_gray', 'italic'],
         self::TOKEN_KEYWORD => 'yellow',
         self::TOKEN_DEFAULT => 'default',
-        self::TOKEN_HTML => 'cyan',
+        self::TOKEN_HTML    => 'cyan',
 
         self::ACTUAL_LINE_MARK  => 'red',
-        self::LINE_NUMBER => 'dark_gray',
-    );
+        self::LINE_NUMBER       => 'dark_gray',
+    ];
 
     /**
      * @param ConsoleColor $color
+     *
      * @throws ExpectedException
      */
     public function __construct(Colors $color)
@@ -69,12 +70,14 @@ class Highlighter
 
     /**
      * @param string $source
-     * @param int $lineNumber
-     * @param int $linesBefore
-     * @param int $linesAfter
-     * @return string
+     * @param int    $lineNumber
+     * @param int    $linesBefore
+     * @param int    $linesAfter
+     *
      * @throws ExpectedException
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getCodeSnippet($source, $lineNumber, $linesBefore = 2, $linesAfter = 2)
     {
@@ -92,50 +95,59 @@ class Highlighter
 
     /**
      * @param string $source
-     * @return string
+     *
      * @throws ExpectedException
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getWholeFile($source)
     {
         $tokenLines = $this->getHighlightedLines($source);
         $lines = $this->colorLines($tokenLines);
+
         return implode(PHP_EOL, $lines);
     }
 
     /**
      * @param string $source
-     * @return string
+     *
      * @throws ExpectedException
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getWholeFileWithLineNumbers($source)
     {
         $tokenLines = $this->getHighlightedLines($source);
         $lines = $this->colorLines($tokenLines);
+
         return $this->lineNumbers($lines);
     }
 
     /**
      * @param string $source
+     *
      * @return array
      */
     private function getHighlightedLines($source)
     {
-        $source = str_replace(array("\r\n", "\r"), "\n", $source);
+        $source = str_replace(["\r\n", "\r"], "\n", $source);
         $tokens = $this->tokenize($source);
+
         return $this->splitToLines($tokens);
     }
 
     /**
      * @param string $source
+     *
      * @return array
      */
     private function tokenize($source)
     {
         $tokens = token_get_all($source);
 
-        $output = array();
+        $output = [];
         $currentType = null;
         $buffer = '';
 
@@ -191,7 +203,7 @@ class Highlighter
             }
 
             if ($currentType !== $newType) {
-                $output[] = array($currentType, $buffer);
+                $output[] = [$currentType, $buffer];
                 $buffer = '';
                 $currentType = $newType;
             }
@@ -200,7 +212,7 @@ class Highlighter
         }
 
         if (isset($newType)) {
-            $output[] = array($newType, $buffer);
+            $output[] = [$newType, $buffer];
         }
 
         return $output;
@@ -208,25 +220,26 @@ class Highlighter
 
     /**
      * @param array $tokens
+     *
      * @return array
      */
     private function splitToLines(array $tokens)
     {
-        $lines = array();
+        $lines = [];
 
-        $line = array();
+        $line = [];
         foreach ($tokens as $token) {
             foreach (explode("\n", $token[1]) as $count => $tokenLine) {
                 if ($count > 0) {
                     $lines[] = $line;
-                    $line = array();
+                    $line = [];
                 }
 
                 if ($tokenLine === '') {
                     continue;
                 }
 
-                $line[] = array($token[0], $tokenLine);
+                $line[] = [$token[0], $tokenLine];
             }
         }
 
@@ -237,13 +250,15 @@ class Highlighter
 
     /**
      * @param array $tokenLines
-     * @return array
+     *
      * @throws ExpectedException
      * @throws \InvalidArgumentException
+     *
+     * @return array
      */
     private function colorLines(array $tokenLines)
     {
-        $lines = array();
+        $lines = [];
         foreach ($tokenLines as $lineCount => $tokenLine) {
             $line = '';
             foreach ($tokenLine as $token) {
@@ -261,10 +276,12 @@ class Highlighter
     }
 
     /**
-     * @param array $lines
+     * @param array    $lines
      * @param null|int $markLine
-     * @return string
+     *
      * @throws ExpectedException
+     *
+     * @return string
      */
     private function lineNumbers(array $lines, $markLine = null)
     {
@@ -277,8 +294,8 @@ class Highlighter
                 $snippet .= ($markLine === $i + 1 ? $this->color->apply(self::ACTUAL_LINE_MARK, '  > ') : '    ');
             }
 
-            $snippet .= $this->color->apply(self::LINE_NUMBER, str_pad($i + 1, $lineStrlen, ' ', STR_PAD_LEFT) . '| ');
-            $snippet .= $line . PHP_EOL;
+            $snippet .= $this->color->apply(self::LINE_NUMBER, str_pad($i + 1, $lineStrlen, ' ', STR_PAD_LEFT).'| ');
+            $snippet .= $line.PHP_EOL;
         }
 
         return $snippet;

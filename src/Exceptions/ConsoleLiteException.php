@@ -15,7 +15,7 @@
 namespace BiuradPHP\Toolbox\ConsoleLite\Exceptions;
 
 /**
- * ConsoleLite ApplicationException
+ * ConsoleLite ApplicationException.
  *
  * @author Divine Niiquaye <hello@biuhub.net>
  * @license MIT
