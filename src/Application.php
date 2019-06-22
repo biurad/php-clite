@@ -14,15 +14,15 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
-use InvalidArgumentException;
+use BiuradPHP\Toolbox\ConsoleLite\Commands\CommandAbout;
 use BiuradPHP\Toolbox\ConsoleLite\Commands\CommandList;
 use BiuradPHP\Toolbox\ConsoleLite\Commands\CommandPhar;
 use BiuradPHP\Toolbox\ConsoleLite\Commands\CommandStub;
 use BiuradPHP\Toolbox\ConsoleLite\Concerns\Highlighter;
-use BiuradPHP\Toolbox\ConsoleLite\Commands\CommandAbout;
-use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ExpectedException;
-use BiuradPHP\Toolbox\ConsoleLite\Exceptions\DeprecatedException;
 use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ConsoleLiteException;
+use BiuradPHP\Toolbox\ConsoleLite\Exceptions\DeprecatedException;
+use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ExpectedException;
+use InvalidArgumentException;
 
 /**
  * ConsoleLite Application.
@@ -213,10 +213,10 @@ class Application extends Terminal
             $command->defineApp($this);
 
             $this->commands[$commandName] = [
-                'handler' => [$command, 'handle'],
+                'handler'     => [$command, 'handle'],
                 'description' => $command->getDescription(),
-                'args' => $args,
-                'options' => $options,
+                'args'        => $args,
+                'options'     => $options,
             ];
         } catch (ExpectedException $e) {
             $class = get_class($command);
@@ -237,10 +237,10 @@ class Application extends Terminal
         list($commandName, $args, $options) = $this->_parseCommand($signature);
 
         $this->commands[$commandName] = [
-            'handler' => $handler,
+            'handler'     => $handler,
             'description' => $description,
-            'args' => $args,
-            'options' => $options,
+            'args'        => $args,
+            'options'     => $options,
         ];
     }
 
@@ -259,9 +259,9 @@ class Application extends Terminal
      *
      * @param string $name The command name or alias
      *
-     * @return Command A Command object
-     *
      * @throws ExpectedException When given command name does not exist
+     *
+     * @return Command A Command object
      */
     public function getCommand($name)
     {
@@ -425,9 +425,9 @@ class Application extends Terminal
      *
      * @param string|int $name The Argument name or position
      *
-     * @return mixed
-     *
      * @throws InvalidArgumentException When argument given doesn't exist
+     *
+     * @return mixed
      */
     public function getArgument($name)
     {
@@ -752,7 +752,7 @@ class Application extends Terminal
     public function newLine(int $num = 1, $line = false, $format = '+')
     {
         // Do it once or more, write with empty string gives us a new line
-        for ($i = 0; $i < $num; ++$i) {
+        for ($i = 0; $i < $num; $i++) {
             if (false === $line) {
                 $this->write(PHP_EOL, null);
             } else {
@@ -917,7 +917,7 @@ class Application extends Terminal
                 //$this->write($time.'...');
                 $this->showProgress($time);
                 sleep(1);
-                --$time;
+                $time--;
             }
             $this->newLine();
         } else {
@@ -1006,7 +1006,7 @@ class Application extends Terminal
             $lastTime = $now;
             // echo $chars[$counter];
             $this->getSilencer()->call('printf', $tpl, $chars[$counter].$msg);
-            ++$counter;
+            $counter++;
 
             if ($counter > \strlen($chars) - 1) {
                 $counter = 0;
@@ -1043,9 +1043,9 @@ class Application extends Terminal
                 }
 
                 $args[$argName] = [
-                    'is_array' => !empty($matchArgs['arr'][$i]),
+                    'is_array'    => !empty($matchArgs['arr'][$i]),
                     'is_optional' => !empty($matchArgs['optional'][$i]) || !empty($default),
-                    'default' => $default ?: null,
+                    'default'     => $default ?: null,
                     'description' => $description,
                 ];
             }
@@ -1062,9 +1062,9 @@ class Application extends Terminal
                 }
                 $options[$optName] = [
                     'is_valuable' => !empty($matchOptions['valuable'][$i]),
-                    'default' => $default ?: null,
+                    'default'     => $default ?: null,
                     'description' => $description,
-                    'alias' => $matchOptions['alias'][$i] ?: null,
+                    'alias'       => $matchOptions['alias'][$i] ?: null,
                 ];
             }
         }

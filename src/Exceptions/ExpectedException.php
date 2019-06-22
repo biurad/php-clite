@@ -15,7 +15,7 @@
 namespace BiuradPHP\Toolbox\ConsoleLite\Exceptions;
 
 /**
- * ConsoleLite LogicalException
+ * ConsoleLite LogicalException.
  *
  * @author Divine Niiquaye <hello@biuhub.net>
  * @license MIT

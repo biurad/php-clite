@@ -15,7 +15,7 @@
 namespace BiuradPHP\Toolbox\ConsoleLite\Exceptions;
 
 /**
- * ConsoleLite DeprecatedException
+ * ConsoleLite DeprecatedException.
  *
  * Enter deprecated option or command name.
  *
@@ -41,9 +41,10 @@ class DeprecatedException extends \RuntimeException
     }
 
     /**
-     * Undocumented function
+     * Undocumented function.
      *
      * @param string|array $message
+     *
      * @return string|array
      */
     protected function _message($message)

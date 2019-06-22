@@ -14,18 +14,18 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite\Compile;
 
-use Phar;
-use LogicException;
-use RuntimeException;
-use FilesystemIterator;
 use BadMethodCallException;
-use InvalidArgumentException;
-use UnexpectedValueException;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
-use RecursiveCallbackFilterIterator;
-use BiuradPHP\Toolbox\ConsoleLite\Terminal;
 use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ConsoleLiteException;
+use BiuradPHP\Toolbox\ConsoleLite\Terminal;
+use FilesystemIterator;
+use InvalidArgumentException;
+use LogicException;
+use Phar;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * The Compiler class creates PHAR archives.
@@ -55,7 +55,7 @@ class PharCompiler extends Terminal
     private $supportedSignatureTypes = [
         \Phar::SHA512 => 1,
         \Phar::SHA256 => 1,
-        \Phar::SHA1 => 1,
+        \Phar::SHA1   => 1,
     ];
 
     /** @var resource */
@@ -213,11 +213,11 @@ class PharCompiler extends Terminal
      * @param string|array|null $files     Only fetch the listed files
      * @param bool              $overwrite
      *
-     * @return bool
-     *
      * @throws UnexpectedValueException
      * @throws BadMethodCallException
      * @throws RuntimeException
+     *
+     * @return bool
      */
     public function unPack(string $pharFile, string $extractTo, $files = null, $overwrite = false): bool
     {
@@ -334,10 +334,10 @@ class PharCompiler extends Terminal
     public function get_phar_signing_algorithms(): array
     {
         static $algorithms = [
-        'MD5' => Phar::MD5,
-        'SHA1' => Phar::SHA1,
-        'SHA256' => Phar::SHA256,
-        'SHA512' => Phar::SHA512,
+        'MD5'     => Phar::MD5,
+        'SHA1'    => Phar::SHA1,
+        'SHA256'  => Phar::SHA256,
+        'SHA512'  => Phar::SHA512,
         'OPENSSL' => Phar::OPENSSL,
     ];
 
@@ -516,7 +516,7 @@ KEY
     {
         $date = \date('Y-m-d H:i');
 
-        $stub = array('#!/usr/bin/env php', '<?php');
+        $stub = ['#!/usr/bin/env php', '<?php'];
         $stub[] = '/**';
         $stub[] = "* @date $date";
         $stub[] = '* @version '.$this->getVersion();
@@ -544,7 +544,7 @@ KEY
         $stub[] = '}'."\n";
         $stub[] = '__HALT_COMPILER();';
 
-        return \join("\n", $stub);
+        return \implode("\n", $stub);
     }
 
     /**
@@ -602,7 +602,7 @@ KEY
         foreach (token_get_all($source) as $token) {
             if (is_string($token)) {
                 $output .= $token;
-            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+            } elseif (in_array($token[0], [T_COMMENT, T_DOC_COMMENT])) {
                 $output .= str_repeat("\n", substr_count($token[1], "\n"));
             } elseif (T_WHITESPACE === $token[0]) {
                 // reduce wide spaces

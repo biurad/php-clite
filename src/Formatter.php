@@ -196,7 +196,7 @@ class Formatter extends Terminal
 
         $last = count($columns) - 1;
         $out = '';
-        for ($i = 0; $i < $maxlen; ++$i) {
+        for ($i = 0; $i < $maxlen; $i++) {
             foreach ($columns as $col => $width) {
                 if (isset($wrapped[$col][$i])) {
                     $val = $wrapped[$col][$i];
@@ -262,7 +262,7 @@ class Formatter extends Terminal
         $max_cols_lengths = [];
 
         // Read row by row and define the longest columns
-        for ($row = 0; $row < $total_rows; ++$row) {
+        for ($row = 0; $row < $total_rows; $row++) {
             $column = 0; // Current column index
             foreach ($table_rows[$row] as $col) {
                 // Sets the size of this column in the current row
@@ -276,27 +276,27 @@ class Formatter extends Terminal
                 }
 
                 // We can go check the size of the next column...
-                ++$column;
+                $column++;
             }
         }
 
         // Read row by row and add spaces at the end of the columns
         // to match the exact column length
-        for ($row = 0; $row < $total_rows; ++$row) {
+        for ($row = 0; $row < $total_rows; $row++) {
             $column = 0;
             foreach ($table_rows[$row] as $col) {
                 $diff = $max_cols_lengths[$column] - $this->strlen($col);
                 if ($diff) {
                     $table_rows[$row][$column] = $table_rows[$row][$column].str_repeat(' ', $diff);
                 }
-                ++$column;
+                $column++;
             }
         }
 
         $table = '';
 
         // Joins columns and append the well formatted rows to the table
-        for ($row = 0; $row < $total_rows; ++$row) {
+        for ($row = 0; $row < $total_rows; $row++) {
             // Set the table border-top
             if ($row === 0) {
                 $cols = '+';

@@ -33,7 +33,7 @@ trait Input
      * Asking question.
      *
      * @param string $question
-     * @param array   $default
+     * @param array  $default
      *
      * @return mixed|null
      */
@@ -98,10 +98,10 @@ trait Input
      *
      * @param iterable|null|array $values
      *
-     * @return $this
-     *
      * @throws InvalidArgumentException
      * @throws LogicException
+     *
+     * @return $this
      */
     public function setAutocompleterValues($values)
     {

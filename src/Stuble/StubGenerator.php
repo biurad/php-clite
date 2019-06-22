@@ -17,7 +17,7 @@ namespace BiuradPHP\Toolbox\ConsoleLite\Stuble;
 use BiuradPHP\Toolbox\ConsoleLite\Command;
 
 /**
- * ConsoleLite Stub Generator
+ * ConsoleLite Stub Generator.
  *
  * This class is used to generate stubs
  * for a specified class.
@@ -58,13 +58,12 @@ abstract class StubGenerator extends Command
     /**
      * Execute the console command.
      *
-     * @return bool|null
-     *
      * @throws \BiuradPHP\Toolbox\FilePHP\FileException
+     *
+     * @return bool|null
      */
     public function handle()
     {
-
         $path = getcwd().DIRECTORY_SEPARATOR.str_replace('\\', '/', $this->namespace);
 
         // Next, we will generate the path to the location where this class' file should get
@@ -77,9 +76,9 @@ abstract class StubGenerator extends Command
         // First we will check to see if the class already exists. If it does, we don't want
         // to create the class and overwrite the user's code. So, we will bail out so the
         // code is untouched. Otherwise, we will continue generating this class' files.
-        if ((! $this->hasOption('force') || ! $this->getOption('force')) &&
+        if ((!$this->hasOption('force') || !$this->getOption('force')) &&
              $this->alreadyExists($classfile)) {
-                return $this->getColors()->isEnabled() ?
+            return $this->getColors()->isEnabled() ?
                 $this->errorBlock($this->type.' already exists!') :
                 $this->writeln($this->type.' already exists!');
         }
@@ -121,9 +120,9 @@ abstract class StubGenerator extends Command
      * @param string $namespace
      * @param string $class
      *
-     * @return string
-     *
      * @throws \BiuradPHP\Toolbox\FilePHP\FileException
+     *
+     * @return string
      */
     protected function buildClass($namespace, $class)
     {

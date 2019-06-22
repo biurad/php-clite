@@ -14,9 +14,8 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLiteTest;
 
-use PHPUnit\Framework\TestCase;
 use BiuradPHP\Toolbox\ConsoleLite\Terminal;
-
+use PHPUnit\Framework\TestCase;
 
 class TerminalTest extends TestCase
 {
@@ -64,7 +63,7 @@ class TerminalTest extends TestCase
     public function testCliteLoad()
     {
         $terminal = new Terminal();
-        $file = __DIR__. '/fixtures/clite.json';
+        $file = __DIR__.'/fixtures/clite.json';
 
         $expected = $terminal->loadFile($file);
         $actual = $terminal->decodeFile($file);
