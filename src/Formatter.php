@@ -1,12 +1,10 @@
 <?php
 
-/**
- * The Biurad Library Autoload via cli
- * -----------------------------------------------.
+/*
+ * The Biurad Toolbox ConsoleLite.
  *
  * This is an extensible library used to load classes
  * from namespaces and files just like composer.
- * But this is built in procedural php.
  *
  * @see ReadMe.md to know more about how to load your
  * classes via command line.
@@ -16,24 +14,18 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
-use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
+use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ExpectedException;
 
 /**
- * Class TableFormatter.
+ * Class Formatter.
  *
- * Output text in multiple columns
+ * Output text in multiple columns, tables and more.
  *
- * @author Andreas Gohr <andi@splitbrain.org>
  * @author Divine Niiquaye <hello@biuhub.net>
+ * @license MIT
  */
-class Formatter
+class Formatter extends Terminal
 {
-    /** @var string border between columns */
-    protected $border = ' ';
-
-    /** @var int the terminal width */
-    protected $max = 95;
-
     /** @var Colors for coloring output */
     protected $colors;
 
@@ -44,23 +36,18 @@ class Formatter
     ];
 
     /**
-     * TableFormatter constructor.
+     * Formatter constructor.
      *
      * @param Colors|null $colors
      */
     public function __construct(Colors $colors = null)
     {
-        // try to get terminal width
-        $width = $this->getTerminalWidth();
-        if ($width) {
-            $this->max = $width - 1;
-        }
-
         if ($colors) {
             $this->colors = $colors;
         } else {
             $this->colors = new Colors();
         }
+        parent::__construct();
     }
 
     /**
@@ -107,29 +94,6 @@ class Formatter
     }
 
     /**
-     * Tries to figure out the width of the terminal.
-     *
-     * @return int terminal width, 0 if unknown
-     */
-    protected function getTerminalWidth()
-    {
-        // from environment
-        if (isset($_SERVER['COLUMNS'])) {
-            return (int) $_SERVER['COLUMNS'];
-        }
-
-        // via tput
-        $process = proc_open('tput cols', [
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ], $pipes);
-        $width = (int) stream_get_contents($pipes[1]);
-        proc_close($process);
-
-        return $width;
-    }
-
-    /**
      * Takes an array with dynamic column width and calculates the correct width.
      *
      * Column width can be given as fixed char widths, percentages and a single * width can be given
@@ -138,7 +102,7 @@ class Formatter
      *
      * @param array $columns
      *
-     * @throws JetErrorException
+     * @throws ExpectedException
      *
      * @return int[]
      */
@@ -166,11 +130,11 @@ class Formatter
                     $fluid = $idx;
                     continue;
                 } else {
-                    throw new JetErrorException('Only one fluid column allowed!');
+                    throw new ExpectedException('Only one fluid column allowed!');
                 }
             }
 
-            throw new JetErrorException("unknown column format $col");
+            throw new ExpectedException("unknown column format $col");
         }
 
         $alloc = $fixed;
@@ -191,7 +155,7 @@ class Formatter
 
         $remain = $this->max - $alloc;
         if ($remain < 0) {
-            throw new JetErrorException('Wanted column widths exceed available space');
+            throw new ExpectedException('Wanted column widths exceed available space');
         }
 
         // assign remaining space
@@ -211,7 +175,7 @@ class Formatter
      * @param string[] $texts   list of texts for each column
      * @param array    $colors  A list of color names to use for each column. use empty string for default
      *
-     * @throws JetErrorException
+     * @throws ExpectedException
      *
      * @return string
      */
@@ -232,7 +196,7 @@ class Formatter
 
         $last = count($columns) - 1;
         $out = '';
-        for ($i = 0; $i < $maxlen; $i++) {
+        for ($i = 0; $i < $maxlen; ++$i) {
             foreach ($columns as $col => $width) {
                 if (isset($wrapped[$col][$i])) {
                     $val = $wrapped[$col][$i];
@@ -241,7 +205,7 @@ class Formatter
                 }
                 $chunk = $this->pad($val, $width);
                 if (isset($colors[$col]) && $colors[$col]) {
-                    $chunk = $this->colors->wrap($chunk, $colors[$col]);
+                    $chunk = $this->colors->apply($colors[$col], $chunk);
                 }
                 $out .= $chunk;
 
@@ -254,6 +218,104 @@ class Formatter
         }
 
         return $out;
+    }
+
+    /**
+     * Returns a well formatted table.
+     *
+     * @param array $tbody List of rows
+     * @param array $thead List of columns
+     *
+     * Example:
+     *
+     *     +---------------+-----------------------+------------------+
+     *     | ISBN          | Title                 | Author           |
+     *     +---------------+-----------------------+------------------+
+     *     | 99921-58-10-7 | Divine Comedy         | Dante Alighieri  |
+     *     | 9971-5-0210-0 | A Tale of Two Cities  | Charles Dickens  |
+     *     | 960-425-059-0 | The Lord of the Rings | J. R. R. Tolkien |
+     *     +---------------+-----------------------+------------------+
+     */
+    public function table(array $thead = [], array $tbody = [])
+    {
+        // All the rows in the table will be here until the end
+        $table_rows = [];
+
+        // We need only indexes and not keys
+        if (!empty($thead)) {
+            $table_rows[] = array_values($thead);
+        }
+
+        foreach ($tbody as $tr) {
+            $table_rows[] = array_values($tr);
+        }
+
+        // Yes, it really is necessary to know this count
+        $total_rows = count($table_rows);
+
+        // Store all columns lengths
+        // $all_cols_lengths[row][column] = length
+        $all_cols_lengths = [];
+
+        // Store maximum lengths by column
+        // $max_cols_lengths[column] = length
+        $max_cols_lengths = [];
+
+        // Read row by row and define the longest columns
+        for ($row = 0; $row < $total_rows; ++$row) {
+            $column = 0; // Current column index
+            foreach ($table_rows[$row] as $col) {
+                // Sets the size of this column in the current row
+                $all_cols_lengths[$row][$column] = $this->strlen($col);
+
+                // If the current column does not have a value among the larger ones
+                // or the value of this is greater than the existing one
+                // then, now, this assumes the maximum length
+                if (!isset($max_cols_lengths[$column]) || $all_cols_lengths[$row][$column] > $max_cols_lengths[$column]) {
+                    $max_cols_lengths[$column] = $all_cols_lengths[$row][$column];
+                }
+
+                // We can go check the size of the next column...
+                ++$column;
+            }
+        }
+
+        // Read row by row and add spaces at the end of the columns
+        // to match the exact column length
+        for ($row = 0; $row < $total_rows; ++$row) {
+            $column = 0;
+            foreach ($table_rows[$row] as $col) {
+                $diff = $max_cols_lengths[$column] - $this->strlen($col);
+                if ($diff) {
+                    $table_rows[$row][$column] = $table_rows[$row][$column].str_repeat(' ', $diff);
+                }
+                ++$column;
+            }
+        }
+
+        $table = '';
+
+        // Joins columns and append the well formatted rows to the table
+        for ($row = 0; $row < $total_rows; ++$row) {
+            // Set the table border-top
+            if ($row === 0) {
+                $cols = '+';
+                foreach ($table_rows[$row] as $col) {
+                    $cols .= str_repeat('-', $this->strlen($col) + 2).'+';
+                }
+                $table .= $cols.PHP_EOL;
+            }
+
+            // Set the columns borders
+            $table .= '| '.implode(' | ', $table_rows[$row]).' |'.PHP_EOL;
+
+            // Set the thead and table borders-bottom
+            if ($row === 0 && !empty($thead) || $row + 1 === $total_rows) {
+                $table .= $cols.PHP_EOL;
+            }
+        }
+
+        return $table;
     }
 
     /**
@@ -289,7 +351,7 @@ class Formatter
         $string = preg_replace("/\33\\[\\d+(;\\d+)?m/", '', $string);
 
         if (function_exists('mb_strlen')) {
-            return mb_strlen($string, 'utf-8');
+            return mb_strlen($string);
         }
 
         return strlen($string);
@@ -312,6 +374,9 @@ class Formatter
     }
 
     /**
+     * Takes a string and writes it to the command line, wrapping to a maximum
+     * width. If no maximum width is specified, will wrap to 75 max width.
+     *
      * @param string $str
      * @param int    $width
      * @param string $break
@@ -438,6 +503,24 @@ class Formatter
                 }
             }
         }
+    }
+
+    /**
+     * @param mixed $val
+     *
+     * @return string
+     */
+    public function formatToString($val): string
+    {
+        if (null === $val) {
+            return '(Null)';
+        }
+
+        if (\is_bool($val)) {
+            return $val ? '(True)' : '(False)';
+        }
+
+        return (string) $val;
     }
 
     /**

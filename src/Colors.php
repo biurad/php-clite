@@ -1,12 +1,10 @@
 <?php
 
-/**
- * The Biurad Library Autoload via cli
- * -----------------------------------------------.
+/*
+ * The Biurad Toolbox ConsoleLite.
  *
  * This is an extensible library used to load classes
  * from namespaces and files just like composer.
- * But this is built in procedural php.
  *
  * @see ReadMe.md to know more about how to load your
  * classes via command line.
@@ -16,116 +14,99 @@
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
-use Exception;
+use InvalidArgumentException;
+use BiuradPHP\Toolbox\FilePHP\FileHandler;
+use BiuradPHP\Toolbox\ConsoleLite\Concerns\Silencer;
+use BiuradPHP\Toolbox\ConsoleLite\Exceptions\ExpectedException;
 
 /**
  * Class Colors.
  *
- * Handles color output on (Linux) terminals
+ * Handles color output on (Linux/Windows/Darwin/IBM/MacOs) terminals.
+ * Originally from Jakub Onderka.
  *
- * @author Andreas Gohr <andi@splitbrain.org>
+ * @author Jakub Onderka <jakub.onderka@gmail.com>
  * @author Divine Niiquaye <hello@biuhub.net>
+ * @license MIT
  */
-class Colors
+class Colors extends Terminal
 {
-    // these constants make IDE autocompletion easier, but color names can also be passed as strings
-    const C_RESET = 'reset';
-    const C_BLACK = 'black';
-    const C_DARKGRAY = 'darkgray';
-    const C_BLUE = 'blue';
-    const C_LIGHTBLUE = 'lightblue';
-    const C_GREEN = 'green';
-    const C_LIGHTGREEN = 'lightgreen';
-    const C_CYAN = 'cyan';
-    const C_LIGHTCYAN = 'lightcyan';
-    const C_RED = 'red';
-    const C_LIGHTRED = 'lightred';
-    const C_PURPLE = 'purple';
-    const C_MAGENTA = 'magenta';
-    const C_LIGHTPURPLE = 'lightpurple';
-    const C_BROWN = 'brown';
-    const C_YELLOW = 'yellow';
-    const C_LIGHTGRAY = 'lightgray';
-    const C_WHITE = 'white';
+    const FOREGROUND = 38;
+    const BACKGROUND = 48;
 
-    /** @var array known color names */
-    protected $colors = [
-        self::C_RESET       => '0',
-        self::C_BLACK       => '0;30',
-        self::C_DARKGRAY    => '1;30',
-        self::C_BLUE        => '0;34',
-        self::C_LIGHTBLUE   => '1;34',
-        self::C_GREEN       => '0;32',
-        self::C_LIGHTGREEN  => '1;32',
-        self::C_CYAN        => '0;36',
-        self::C_LIGHTCYAN   => '1;36',
-        self::C_RED         => '0;31',
-        self::C_LIGHTRED    => '1;31',
-        self::C_PURPLE      => '0;35',
-        self::C_MAGENTA     => '0;35',
-        self::C_LIGHTPURPLE => '1;35',
-        self::C_BROWN       => '0;33',
-        self::C_YELLOW      => '1;33',
-        self::C_LIGHTGRAY   => '0;37',
-        self::C_WHITE       => '1;37',
-    ];
+    const COLOR256_REGEXP = '~^(bg_)?color_([0-9]{1,3})$~';
 
-    private static $foregroundColors = [
-        'black'        => self::C_BLACK,
-        'dark_gray'    => self::C_DARKGRAY,
-        'blue'         => self::C_BLUE,
-        'light_blue'   => self::C_LIGHTBLUE,
-        'green'        => self::C_GREEN,
-        'light_green'  => self::C_LIGHTGREEN,
-        'cyan'         => self::C_CYAN,
-        'light_cyan'   => self::C_LIGHTCYAN,
-        'red'          => self::C_RED,
-        'light_red'    => self::C_LIGHTRED,
-        'purple'       => self::C_PURPLE,
-        'magenta'      => self::C_MAGENTA,
-        'light_purple' => self::C_LIGHTPURPLE,
-        'brown'        => self::C_BROWN,
-        'yellow'       => self::C_YELLOW,
-        'light_gray'   => self::C_LIGHTGRAY,
-        'white'        => self::C_WHITE,
-        'default'      => self::C_RESET,
-    ];
+    const RESET_STYLE = 0;
 
-    private static $backgroundColors = [
-        'black'      => '40',
-        'red'        => '41',
-        'green'      => '42',
-        'yellow'     => '43',
-        'blue'       => '44',
-        'magenta'    => '45',
-        'cyan'       => '46',
-        'light_gray' => '47',
+    /** @var bool */
+    private $isSupported;
+
+    /** @var bool */
+    private $forceStyle = false;
+
+    /** @var array */
+    private $styles = [
+        'none' => null,
+        'bold' => '1',
+        'dark' => '2',
+        'italic' => '3',
+        'underline' => '4',
+        'blink' => '5',
+        'reverse' => '7',
+        'concealed' => '8',
+
+        'default' => '39',
+        'black' => '30',
+        'red' => '31',
+        'green' => '32',
+        'yellow' => '33',
+        'blue' => '34',
+        'magenta' => '35',
+        'purple' => '35',
+        'cyan' => '36',
+        'light_gray' => '37',
+
+        'dark_gray' => '90',
+        'light_red' => '91',
+        'light_green' => '92',
+        'light_yellow' => '93',
+        'light_blue' => '94',
+        'light_magenta' => '95',
+        'light_cyan' => '96',
+        'white' => '97',
+
+        'bg_default' => '49',
+        'bg_black' => '40',
+        'bg_red' => '41',
+        'bg_green' => '42',
+        'bg_yellow' => '43',
+        'bg_blue' => '44',
+        'bg_magenta' => '45',
+        'bg_cyan' => '46',
+        'bg_light_gray' => '47',
+
+        'bg_dark_gray' => '100',
+        'bg_light_red' => '101',
+        'bg_light_green' => '102',
+        'bg_light_yellow' => '103',
+        'bg_light_blue' => '104',
+        'bg_light_magenta' => '105',
+        'bg_light_cyan' => '106',
+        'bg_white' => '107',
     ];
 
     /** @var bool should colors be used? */
-    protected $enabled = true;
+    protected $enabled;
 
-    /**
-     * Constructor.
-     *
-     * Tries to disable colors for non-terminals
-     */
+    /** @var array */
+    private $themes = array();
+
     public function __construct()
     {
-        if (function_exists('posix_isatty') && !posix_isatty(STDOUT)) {
-            $this->disable();
+        $this->isSupported = $this->hasColorSupport();
 
-            return;
-        }
-        if (!getenv('TERM')) {
-            $this->disable();
-
-            return;
-        }
-        if (!$this->isWindows()) {
+        if ($this->hasColorSupport()) {
             $this->enable();
-
-            return;
         }
     }
 
@@ -134,11 +115,9 @@ class Colors
      */
     public function enable()
     {
-        $this->enabled = true;
-        $file = getcwd().DIRECTORY_SEPARATOR.'color.config';
-        $handle = fopen($file, 'w');
-        fwrite($handle, 'true');
-        fclose($handle);
+        $color = $this->enabled = true;
+
+        return $color;
     }
 
     /**
@@ -146,11 +125,9 @@ class Colors
      */
     public function disable()
     {
-        $this->enabled = false;
-        $file = getcwd().DIRECTORY_SEPARATOR.'color.config';
-        $handle = fopen($file, 'w');
-        fwrite($handle, 'false');
-        fclose($handle);
+        $color = $this->enabled = false;
+
+        return $color;
     }
 
     /**
@@ -158,126 +135,210 @@ class Colors
      */
     public function isEnabled()
     {
-        if (@file_get_contents(getcwd().DIRECTORY_SEPARATOR.'color.config') == 'true') {
+        if ($this->hasColorSupport()) {
             return $this->enabled;
         }
     }
 
-    public static function removecolor($string)
+    /**
+     * @param string|array $style
+     * @param string       $text
+     *
+     * @return string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function apply($style, $text)
     {
-        $string = preg_replace("/\033\[[^m]*m/", '', $string);
-        @unlink(getcwd().DIRECTORY_SEPARATOR.'color.config');
+        if (!$this->isStyleForced() && !$this->isEnabled()) {
+            $this->disable();
+            return $text;
+        }
 
-        return $string;
+        if (is_string($style)) {
+            $style = array($style);
+        }
+        if (!is_array($style)) {
+            throw new InvalidArgumentException('Style must be string or array.');
+        }
+
+        $sequences = array();
+
+        foreach ($style as $s) {
+            if (isset($this->themes[$s])) {
+                $sequences = array_merge($sequences, $this->themeSequence($s));
+            } elseif ($this->isValidStyle($s)) {
+                $sequences[] = $this->styleSequence($s);
+            } else {
+                throw new ExpectedException(sprintf('Invalid style type "%s", This should either be a color type or an option like %s', $s, '"bold" or "italic"'));
+            }
+        }
+
+        $sequences = array_filter($sequences, function ($val) {
+            return $val !== null;
+        });
+
+        if (empty($sequences)) {
+            return $text;
+        }
+
+        return $this->escSequence(implode(';', $sequences)).$text.$this->escSequence(self::RESET_STYLE);
     }
 
     /**
-     * Check whether OS is windows.
+     * @param bool $forceStyle
+     */
+    public function setForceStyle($forceStyle)
+    {
+        $this->forceStyle = (bool) $forceStyle;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStyleForced()
+    {
+        return $this->forceStyle;
+    }
+
+    /**
+     * @param array $themes
+     *
+     * @throws InvalidArgumentException
+     */
+    public function setThemes(array $themes)
+    {
+        $this->themes = array();
+        foreach ($themes as $name => $styles) {
+            $this->addTheme($name, $styles);
+        }
+    }
+
+    /**
+     * @param string       $name
+     * @param array|string $styles
+     *
+     * @throws InvalidArgumentException
+     */
+    public function addTheme($name, $styles)
+    {
+        if (is_string($styles)) {
+            $styles = array($styles);
+        }
+        if (!is_array($styles)) {
+            throw new InvalidArgumentException('Style must be string or array.');
+        }
+
+        foreach ($styles as $style) {
+            if (!$this->isValidStyle($style)) {
+                throw new ExpectedException(sprintf('Invalid style type "%s", This should either be a color type or an option like %s', $style, '"bold" or "italic"'));
+            }
+        }
+
+        $this->themes[$name] = $styles;
+    }
+
+    /**
+     * @return array
+     */
+    public function getThemes()
+    {
+        return $this->themes;
+    }
+
+    /**
+     * @param string $name
      *
      * @return bool
      */
-    public function isWindows()
+    public function hasTheme($name)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD') || PHP_OS === 'WINNT') {
-            return '\\' === DIRECTORY_SEPARATOR;
+        return isset($this->themes[$name]);
+    }
+
+    /**
+     * @param string $name
+     */
+    public function removeTheme($name)
+    {
+        unset($this->themes[$name]);
+    }
+
+    /**
+     * @return bool
+     */
+    public function are256ColorsSupported()
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            return function_exists('sapi_windows_vt100_support') && @sapi_windows_vt100_support(STDOUT);
+        } else {
+            return strpos(getenv('TERM'), '256color') !== false;
         }
     }
 
     /**
-     * Convenience function to print a line in a given color.
-     *
-     * @param string   $line    the line to print, a new line is added automatically
-     * @param string   $color   one of the available color names
-     * @param resource $channel file descriptor to write to
-     *
-     * @throws Exception
+     * @return array
      */
-    public function println($line, $color, $bgColor = null, $channel = STDOUT)
+    public function getPossibleStyles()
     {
-        $this->set($color, $bgColor);
-        fwrite($channel, rtrim($line));
-        $this->reset();
+        return array_keys($this->styles);
     }
 
     /**
-     * Returns the given text wrapped in the appropriate color and reset code.
+     * @param string $name
      *
-     * @param string $text    string to wrap
-     * @param string $fgColor one of the available color names
-     * @param string $bgColor one of the avialiable background color
-     *
-     * @throws Exception
-     *
-     * @return string the wrapped string
+     * @return string[]
      */
-    public function wrap($text, $fgColor, $bgColor = null)
+    private function themeSequence($name)
     {
-        // Check if given foreground color found
-        if (isset(static::$foregroundColors[$fgColor])) {
-            $coloredString = static::$foregroundColors[$fgColor];
+        $sequences = array();
+        foreach ($this->themes[$name] as $style) {
+            $sequences[] = $this->styleSequence($style);
         }
 
-        // Add string and end coloring
-        //$coloredString .=  $text . ($colored? $this->reset() : "");
-        return $this->getColorCode($coloredString, $bgColor).$text.$this->getColorCode('reset');
+        return $sequences;
     }
 
     /**
-     * Gets the appropriate terminal code for the given color.
+     * @param string $style
      *
-     * @param string $color one of the available color names
-     *
-     * @throws \InvalidArgumentException When the color names isn't defined
-     *
-     * @return string color code
+     * @return string
      */
-    public function getColorCode($color, $bgColor = null)
+    private function styleSequence($style)
     {
-        if (!$this->isEnabled()) {
-            return '';
+        if (array_key_exists($style, $this->styles)) {
+            return $this->styles[$style];
         }
 
-        $coloredString = '';
-
-        // Check if given background color found
-        if (isset(static::$backgroundColors[$bgColor])) {
-            $coloredString .= sprintf("\033[%sm", static::$backgroundColors[$bgColor]);
+        if ($this->are256ColorsSupported()) {
+            return null;
         }
 
-        // Check if given foreground color found
-        if (isset($this->colors[$color])) {
-            $coloredString .= sprintf("\033[%sm", $this->colors[$color]);
-        }
-        if (!isset($this->colors[$color])) {
-            throw new \InvalidArgumentException(sprintf('Invalid foreground color specified: "%s". Expected one of (%s)', $color, implode(', ', array_keys(static::$foregroundColors))));
-        }
+        preg_match(self::COLOR256_REGEXP, $style, $matches);
 
-        //return $this->colors[$color];
-        return $coloredString;
+        $type = $matches[1] === 'bg_' ? self::BACKGROUND : self::FOREGROUND;
+        $value = $matches[2];
+
+        return "$type;5;$value";
     }
 
     /**
-     * Set the given color for consecutive output.
+     * @param string $style
      *
-     * @param string   $color   one of the supported color names
-     * @param resource $channel file descriptor to write to
-     *
-     * @throws Exception
+     * @return bool
      */
-    public function set($color, $bgColor = null, $channel = STDOUT)
+    private function isValidStyle($style)
     {
-        fwrite($channel, $this->getColorCode($color, $bgColor));
+        return array_key_exists($style, $this->styles) || preg_match(self::COLOR256_REGEXP, $style);
     }
 
     /**
-     * reset the terminal color.
+     * @param string|int $value
      *
-     * @param resource $channel file descriptor to write to
-     *
-     * @throws Exception
+     * @return string
      */
-    public function reset($channel = STDOUT)
+    private function escSequence($value)
     {
-        $this->set('reset', null, $channel);
+        return "\033[{$value}m";
     }
 }

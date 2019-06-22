@@ -20,7 +20,7 @@
 
 </div>
 
-The Console tool allows you to create command-line commands. Your console commands can be used for any recurring task, such as cronjobs, imports, or other batch jobs.
+The Console tool allows you to create command-line commands. Your console commands can be used for any recurring task, stub generator, phar compile, such as cronjobs, imports, or other batch jobs.
 
 # Installation
 
@@ -156,18 +156,18 @@ php console hello --help
 
 ### Enable Color
 
-You can enable color by putting `--color` or `-c` for each command. For example:
+You can force colors by putting `--ansi` for each command. For example:
 
 ```bash
-php console hello --color
+php console hello --ansi
 ```
 
 ### Disable Color
 
-You can disable color by putting `--no-color` or `-n` for each command. For example:
+You can disable color by putting `--no-ansi` for each command. For example:
 
 ```bash
-php console hello --no-color
+php console hello --no-ansi
 ```
 
 # Command Usage and Options
@@ -249,7 +249,8 @@ By default the CLI classes registers two error or exception handlers.
     <?php
 
     use BiuradPHP\Toolbox\ConsoleLite\Application;
-    use BiuradPHP\Toolbox\ConsoleLite\Exception\JetErrorException;
+    use BiuradPHP\Toolbox\ConsoleLite\Exception\ConsoleLiteException;
+    use BiuradPHP\Toolbox\ConsoleLite\Exception\DeprecatedException;
 
     require __DIR__.'/vendor/autoload.php';
 
@@ -257,13 +258,13 @@ By default the CLI classes registers two error or exception handlers.
 
     $application->command('exception {--test} {--error} {--replace}', 'This is an exception test', function () {
         // This throws an application exception.
-        if ($this->hasOption('test')) {
-            throw new JetErrorException('Test option not allowed');
+        if (! $this->hasOption('test')) {
+            throw new ConsoleLiteException('Test option not allowed');
         }
 
         // This throws a deprecated exception.
         if ($this->hasOption('error')) {
-            throw new JetErrorException::deprecated('--error', '--replace', 'option');
+            throw new DeprecatedException(['--error', '--replace']);
         }
 
         $this->block('This is an Exception test');
@@ -275,11 +276,36 @@ By default the CLI classes registers two error or exception handlers.
 ## Colored output
 
 Colored output is handled through the `Colors` class. It tries to detect if a color terminal is available and only
-then uses terminal colors. You can always suppress colored output by passing ``--no-color`` to your scripts.
+then uses terminal colors. You can always suppress colored output by passing ``--no-ansi`` to your scripts.
 
-Simple colored messages can be printed by you using the convinence methods `writeln()`, `write()`, `color()`, `style()`,
-`error()` (red), `success()` (red) or `block()`. Each of this methods contains three parameters, one for message, two for color,
-and three for background color.
+Simple colored messages can be printed by you using the convinence methods `writeln()`, `write()`, `sucessBlock()`, `style()`,
+`errorBlock()`, and `block()`. Each of this methods contains three parameters, one for message, two for styles including forground color, background color, and options.
+
+Within the second parameters of the above mentioned methods or functions for writing raw or colored text unto the output. forground color, background color or options, could be defined as string or in array. backgorund colors begins with a '**bg_**' and colors are writen as they are.
+
+e.g. to write background color only
+
+```php
+$this->writeln('Message to output', 'bg_yellow');
+```
+
+e.g. to write forground color only
+
+```php
+$this->writeln('Message to output', 'yellow');
+```
+
+e.g. to write options only
+
+```php
+$this->writeln('Message to output', 'italic');
+```
+
+e.g. to write all styles combined
+
+```php
+$this->writeln('Message to output', ['bg_yellow', 'green', 'bold']);
+```
 
 The formatter allows coloring full columns. To use that mechanism pass an array of colors as third parameter to
 its `format()` method. Please note that you can not pass colored texts in the second parameters (text length calculation
@@ -310,10 +336,251 @@ column to adjust for different terminal widths.
 
 The formatter is used for the automatic help screen accessible when calling your script with ``-h`` or ``--help``.
 
+## Compiling to Phar
+
+ConsoleLite has function were you could compile your php source-codes into a phar file.
+You dont need to create a Phar class, ConsoleLite has it taken care of.
+
+if you installed ConsoleLite as a composer dependency in your project, then hit
+
+```bash
+php vendor/bin/clite compile --config
+```
+
+This generates a sample clite.json file, looking something like the one below
+
+```json
+{
+    "application": "ConsoleLite Configuration",
+    "generated": "2019/06/17 03:41",
+    "version": "1.0.0",
+    "stuble": {
+        "config": {
+            "name": "ConsoleLite Stub Generator"
+        }
+    },
+    "compile": {
+        "config": {
+            "name": "clite.phar",
+            "index": "docs/tests/test",
+            "compression": 0,
+            "signature": null
+        },
+        "pack": {
+            "autoload": "vendor/autoload.php",
+            "bin": "docs/tests/test",
+            "files": [
+                "clite.json",
+                "composer.json"
+            ],
+            "directory": [
+                "src/",
+                "vendor/"
+            ],
+            "excludes": [
+                "Tests/*",
+                "!*.php"
+            ]
+        },
+        "unpack": {
+            "extract-to": "unpack",
+            "files": null,
+            "overwrite": true
+        }
+    }
+}
+```
+
+The `compile` command has options for two kinds of input, thus the **pack** and **unpack**. Given them different config settings in clite.json.
+
+If you already know the Phar class in php. you can finish up the steps by settings them up in clite.json.
+The phar packs or reads directories and files from your working directory.
+
+The **pack** input after command `compile` generate a phar file using the clite.json or using the options below.
+
+- --signature -> Set the signing signature of the phar. eg openssl.key.
+
+- --index -> Set the main file were the phar will be looaded from.
+
+- --compression -> Set the compression level for the phar. eg 0 or 4096.
+
+- --directory -> Set the directory where the phar is generated from.
+
+- --version -> Set the version of the project, so you stay up to date.
+
+- --bin -> Set the bin to be added to the compiled phar file.
+
+- --files -> Add the files that will be needed example, LICENSE file.
+
+- --excludes -> Add the excluded files or directories from the compiled phar file.
+
+- --type -> Set the type of phar that should be generated cli or web.
+
+- --autoload -> Add the file which contains all the classes and namespaces for autoloading.
+
+The **unpack** input after the command `compile` extracts exverything containing in the phar file, into a directory reading from the clite.json or
+using the options.
+
+- --files -> List the files that will be needed example, LICENSE file.(optional)
+
+- --extract -> Set the folder where the files and directories in phar will be extracted to.
+
+- --overwrite -> Allow the previous extracted folders to be overwritten.
+
+## Stuble
+
+Stuble is command line tool built with PHP to simplify working with stubs.
+Stuble will collect parameters in your stub(s) file(s) and ask you those parameters.
+So you don't need to write scripts to handle each stub file.
+
+This is a class that simple let's you generate a class or php file out of a template.
+This is an abstract class, so you don't need to use it like phar, but use it to create a stub.
+
+For usuage, extends the your stuble class to `StubleGenerator`.
+The StubleGenerator has a similarity to Laravel `GeneratorCommand`, cause part of the class is from Laravel, but made simple. Check the class to find out.
+
+When working with ConsoleLite Stuble, you don't need to input a destination path. Path deternation are generated from your namespaces and then the class in inserted into the the namespaces folders, starting from your working directory.
+
+This code below is an example of how to implement a stuble.
+
+```php
+<?php
+
+/*
+ * The Biurad Toolbox ConsoleLite.
+ *
+ * This is an extensible library used to load classes
+ * from namespaces and files just like composer.
+ *
+ * @see ReadMe.md to know more about how to load your
+ * classes via command newLine.
+ *
+ * @author Divine Niiquaye <hello@biuhub.net>
+ */
+
+namespace BiuradPHP\Toolbox\ConsoleLite\Commands;
+
+use BiuradPHP\Toolbox\ConsoleLite\Stuble\StubGenerator;
+
+class CommandStub extends StubGenerator
+{
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'stuble
+    {--command=::Enter a command name of your choice in "coomand:name" pattern.}
+    {--force::Forces the class to be overwritten}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new Php File out of a stub';
+
+    /**
+     * The type of class being generated.
+     *
+     * @var string
+     */
+    protected $type = 'Example command';
+
+    /**
+     * Set the namespace.
+     *
+     * @var string
+     */
+    protected $namespace = 'App\\Console\\';
+
+    /**
+     * Set the class.
+     *
+     * @var string
+     */
+    protected $class = 'WorldClass';
+
+    /**
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    protected function getStub()
+    {
+        return __DIR__.'/../resources/stubs/example.stub';
+    }
+
+    /**
+     * Replace the class name for the given stub.
+     *
+     * @param string $stub
+     * @param string $name
+     *
+     * @return string
+     */
+    protected function replaceClass($stub, $name)
+    {
+        $stub = parent::replaceClass($stub, $name);
+
+        return str_replace('generate:command', $this->hasOption('command') ?: 'command:name', $stub);
+    }
+}
+```
+
+and the template file which was saved in `.stub` file extention, looks like the one below
+
+```php
+<?php
+
+namespace GenerateNamespace;
+
+use BiuradPHP\Toolbox\ConsoleLite\Command;
+
+class GenerateClass extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'generate:command';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //code...
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+        //code...
+    }
+}
+```
+
 ## PSR-3 Logging
 
 The CLI class is a fully PSR-3 compatible logger (printing colored log data to STDOUT and STDERR). This is useful when
 you call backend code from your CLI that expects a Logger instance to produce any sensible status output while running.
+
+By default the logger functions are written in `Command` class.
 
 To use this ability simply inherit from `BiuradPHP\Toolbox\ConsoleLite\PSR3` instead of `BiuradPHP\Toolbox\ConsoleLite\Command`, then pass `$this`
 as the logger instance. Be sure you have the suggested `psr/log` composer package installed.

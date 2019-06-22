@@ -1,98 +1,44 @@
 <?php
 
-/**
- * The Biurad Library Autoload via cli.
+/*
+ * The Biurad Toolbox ConsoleLite.
  *
- * This is an extensible library which has all the commands methods to load classes
- * from namespaces and files just like AutoLoadOne.
- * But this is built with little procedural php.
+ * This is an extensible library used to load classes
+ * from namespaces and files just like composer.
  *
  * @see ReadMe.md to know more about how to load your
  * classes via command line.
  *
  * @author Divine Niiquaye <hello@biuhub.net>
- * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
 namespace BiuradPHP\Toolbox\ConsoleLite;
 
+use Psr\Log\LogLevel;
+
 /**
- * The Command class contains the core functionality of the framework.
- * It is responsible for loading an methods from the application class,
+ * The Command Runner.
+ *
+ * The Command class contains the core functionality of ConsoleLite.
+ * It is responsible for loading methods and functions from the application class,
  * running the registered commands, and generating response.
  *
- * @method void block(mixed $message, string $fgColor, string $bgColor, int $width)
- * This draws a line around a text.
- * @method void helpblock(mixed $name, mixed $description, mixed $namewidth, mixed $deswidth)
- * This has a seperator between message and description.
- *
- * use percentage or '*' to define custom width.
- * @method void color(mixed $message,  string $fgcolor,string  $bgcolor)
- * Use this inbetween $this->write(), $this->writeln, $this->block, $this->helpblock.
- * @method void style(mixed $text, string $fgColor, string $bgColor)
- * Alternative for $this->color.
- * @method void write(mixed $message, string $fgcolor, string  $bgcolor)
- * Write a text into cammandline interface.
- * @method void writeln(mixed $message,  string $fgcolor,string  $bgcolor)
- * Alternatively to $this->write(), a line break is ended with the output.
- * @method void success(mixed $message, int $width)
- * This outputs a text in success format on commandline interface.
- *
- * @see ReadMe.md file that came with the project.
- *
- * @method void defineTitle(mixed $name, string $output,string $color, string $bgcolor)
- * This Defines and prints the title in commandline interface.
- *
- * $output = 'writeln' or $output = 'write' or $output = 'block'.
- * @method mixed getTitle()
- * This get's the set title.
- * @method \BiuradPHP\Toolbox\ConsoleLite\Application execute(string $command)
- * Exexcutes a command, do not use shell_exex, exec, or passthru
- * @method array getCommandsLike(string $keyword)
- * Gets command like keyword.
- * @method bool isWindows()
- * Checks if it's Windows OS.
- * @method bool isLinux()
- * Checks if it's Linux OS.
- * @method array getRegisteredCommands()
- * Get's all avialiable commands registered within the Application.
- * @method string getFilename()
- * Get's the filename where the application is running from.
- * @method mixed hasCommand(string $signature)
- * Checks where a command has been set or registered.
- * @method mixed hasOption(string $options)
- * Checks where an option has be set or registered.
- * @method array getOptions()
- * Gets all avialiable options.
- * @method array getArguements()
- * Gets all avialable arguements.
- * @method bool hasArgument(int $name)
- * Returns true if an Argument object exists by name or position.
- * @method bool hasParameterOption(mixed $values, bool $onlyParams = false)
- * Check whether an option has a parameter.
- * @method mixed getParameterOption(mixed $values, bool $default = false, bool $onlyParams = false)
- * Get the parameter for an option.
- * @method mixed getCommand(mixed $name)
- * @method void line(int $num = 1, bool $line = false)
- * Enter a number of empty lines.
- * @method string shortAlias(string $key)
- * Enter a short alias for an option.
- * @method mixed|null ask(mixed $question, string $default)
- * Ask a question.
- * @method string prompt()
- * Prompts the user for input and shows what they type.
- * @method string hiddenPrompt(bool $allowFallback = false)
- * Prompts the user for input and hides what they type.
- * @method bool confirm(string $question, bool $default = false)
- * Confirm an input.
- * @method bool choice(mixed $question, string $default, array $choices, string $errorMessage)
- * Allows only two choices for now. just like true or false.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Formatter            getFormatter()   Gets the Fomatter class.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Terminal             getTerminal()    Gets the terminal class.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Concerns\Silencer    getSilencer()    Get rid of php warnings
+ * @method \BiuradPHP\Toolbox\FilePHP\FileHandler              getFileHandler() Gets the FileHandler class.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Colors               getColors()      Get the Color class.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Terminal             generate_clite() Generate the config file.
+ * @method \BiuradPHP\Toolbox\ConsoleLite\Concerns\Highlighter getHighLighter() Get the Highlighter class.
  *
  * @author Divine Niiquaye <hello@biuhub.net>
+ * @license MIT
  */
 abstract class Command
 {
     protected $app;
+
+    protected $aliases;
 
     protected $signature;
 
@@ -118,6 +64,170 @@ abstract class Command
     public function getApp()
     {
         $this->app;
+    }
+
+    /**
+     * Logs with an arbitrary level.
+     * PSR-3 compatible loglevels.
+     *
+     * @param mixed       $level
+     * @param string      $message
+     * @param string|null $type
+     */
+    public function addLog(string $message, ?string $type = null)
+    {
+        switch ($type) {
+            case LogLevel::WARNING:
+                $this->warning($message, 'writeln');
+                break;
+            case LogLevel::NOTICE:
+            case LogLevel::INFO:
+                $this->notice($message, 'writeln');
+                break;
+            case LogLevel::EMERGENCY:
+            case LogLevel::CRITICAL:
+            case LogLevel::ERROR:
+            case LogLevel::ALERT:
+                $this->error($message, 'writeln');
+                break;
+            case 'success':
+                $this->writeln($message, 'green');
+                break;
+            case 'debug':
+                $this->writeDebug($message, 'writeln');
+                break;
+            default:
+                $this->writeln($message, 'none');
+                break;
+        }
+    }
+
+    /**
+     * Write a hidden debugger message on console.
+     *
+     * @param string|array $message
+     * @param array|string $context
+     */
+    public function debug($message, $context = array())
+    {
+        $this->writeDebug($message, $context ?: false);
+    }
+
+    /**
+     * Runtime errors that do not require immediate action but should typically
+     * be logged and monitored.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function error($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, 'light_red');
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_light_red', 'white']);
+        }
+
+        return $this->write($message, 'light_red');
+    }
+
+    /**
+     * Exceptional occurrences that are not errors.
+     *
+     * Example: Use of deprecated APIs, poor use of an API, undesirable things
+     * that are not necessarily wrong.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function warning($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, 'light_yellow');
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_light_yellow', 'red']);
+        }
+
+        return $this->write($message, 'light_yellow');
+    }
+
+    /**
+     * Normal but significant events.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function notice($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, 'yellow');
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_yellow', 'light_red']);
+        }
+
+        return $this->write($message, 'yellow');
+    }
+
+    /**
+     * System is unusable.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function emergency($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, 'red');
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_red', 'white']);
+        }
+
+        return $this->write($message, 'red');
+    }
+
+    /**
+     * Action must be taken immediately.
+     *
+     * Example: Entire website down, database unavailable, etc. This should
+     * trigger the SMS alerts and wake you up.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function alert($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, 'cyan');
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_dark_gray', 'cyan']);
+        }
+
+        return $this->write($message, 'cyan');
+    }
+
+    /**
+     * Critical conditions.
+     *
+     * Example: Application component unavailable, unexpected exception.
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    public function critical($message, $context = array())
+    {
+        if ($context === 'writeln') {
+            return $this->writeln($message, ['light_red', 'bold']);
+        }
+        if ($context === 'block') {
+            return $this->block($message, ['bg_light_red', 'white', 'bold']);
+        }
+
+        return $this->write($message, ['light_red', 'bold']);
     }
 
     public function __call($method, $args)

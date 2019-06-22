@@ -1,33 +1,39 @@
 <?php
 
-/**
- * The Biurad Library Autoload via cli
- * -----------------------------------------------.
+/*
+ * The Biurad Toolbox ConsoleLite.
  *
  * This is an extensible library used to load classes
  * from namespaces and files just like composer.
- * But this is built in procedural php.
  *
  * @see ReadMe.md to know more about how to load your
  * classes via command line.
  *
  * @author Divine Niiquaye <hello@biuhub.net>
- * @author Muhammad Syifa <emsifa@gmail.com>
  */
 
 namespace BiuradPHP\Toolbox\ConsoleLite\Concerns;
 
 use RuntimeException;
 
-trait InputUtils
+/**
+ * ConsoleLite Input trait.
+ *
+ * @author Divine Niiquaye <hello@biuhub.net>
+ * @author Muhammad Syifa <emsifa@gmail.com>
+ * @license MIT
+ */
+trait Input
 {
     protected $questionSuffix = '> ';
+
+    protected $autocompleterValues;
 
     /**
      * Asking question.
      *
      * @param string $question
-     * @param bool   $default
+     * @param array   $default
      *
      * @return mixed|null
      */
@@ -75,6 +81,45 @@ trait InputUtils
         }
 
         return $text;
+    }
+
+    /**
+     * Gets values for the autocompleter.
+     *
+     * @return iterable|null
+     */
+    public function getAutocompleterValues()
+    {
+        return $this->autocompleterValues;
+    }
+
+    /**
+     * Sets values for the autocompleter.
+     *
+     * @param iterable|null|array $values
+     *
+     * @return $this
+     *
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     */
+    public function setAutocompleterValues($values)
+    {
+        if (\is_array($values)) {
+            $values = $this->isAssoc($values) ? array_merge(array_keys($values), array_values($values)) : array_values($values);
+        }
+
+        if (null !== $values && !\is_array($values) && !$values instanceof \Traversable) {
+            throw new InvalidArgumentException('Autocompleter values can be either an array, "null" or a "Traversable" object.');
+        }
+
+        if ($this->hidden) {
+            throw new LogicException('A hidden question cannot use the autocompleter.');
+        }
+
+        $this->autocompleterValues = $values;
+
+        return $this;
     }
 
     /**
@@ -141,7 +186,7 @@ trait InputUtils
         // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // fallback to hiddeninput executable
-            $exe = __DIR__.'\\..\\bin\\hiddeninput.exe';
+            $exe = __DIR__.'\\..\\resources\\hiddeninput.exe';
 
             // handle code running from a phar
             if ('phar:' === substr(__FILE__, 0, 5)) {
@@ -236,7 +281,10 @@ trait InputUtils
             $answer = $this->ask($question.' '.$suffix) ?: ($default ? 'y' : 'n');
 
             if (!isset($availableAnswers[$answer])) {
-                $this->block('Please type: (y/n) or (yes/no)', 'white', 'red', 30);
+                $this->getColors()->isEnabled() ? $this->errorBlock('Please type: (y/n) or (yes/no)') :
+                $this->newLine().
+                $this->writeln('Please type: (y/n) or (yes/no)').
+                $this->newLine();
             } else {
                 $result = $availableAnswers[$answer];
             }
