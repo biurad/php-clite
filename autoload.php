@@ -25,12 +25,10 @@ const s5cff67b7d578d__arrautoload = [
     'BiuradPHP\Toolbox\ConsoleLite\Exceptions' => '/src/Exceptions',
     'BiuradPHP\Toolbox\ConsoleLite\Interfaces' => '/src/Interfaces',
     'BiuradPHP\Toolbox\ConsoleLite\Stuble'     => '/src/Stuble',
-    'BiuradPHP\Toolbox\FilePHP'                => 'C:/wamp64/www/biurad-development/Vendor/filephp/src',
 ];
 
 /* @var boolean[] Where $_arrautoload['namespace' or 'namespace\Class']=true if it's absolute (it uses the full path) */
 const s5cff67b7d578d__arrautoloadAbsolute = [
-    'BiuradPHP\Toolbox\FilePHP' => true,
 ];
 
 /**
@@ -94,4 +92,5 @@ spl_autoload_register(function ($class_name) {
     s5cff67b7d578d__auto($class_name);
 });
 // autorun
+@include __DIR__.'../../../autoload.php';
 @include __DIR__.'/vendor/autoload.php';
