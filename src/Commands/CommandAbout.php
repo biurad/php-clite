@@ -49,10 +49,11 @@ class CommandAbout extends Command
         // set the header option
         $this->write(
             $this->formatter->format(
-            ['20%', '*'],
-            ['Console Lite', 'Description'],
-            [['bold', 'green'], 'light_cyan']
-        ));
+                ['20%', '*'],
+                ['Console Lite', 'Description'],
+                [['bold', 'green'], 'light_cyan']
+            )
+        );
         $this->newLine(1, true);
 
         // list of first ([0]name, [1]note or description)
@@ -64,10 +65,11 @@ class CommandAbout extends Command
         foreach ($header_section as $first) {
             $this->write(
                 $this->formatter->format(
-                ['20%', '*'],
-                [$first[0], $first[1]],
-                ['yellow', 'none']
-            ));
+                    ['20%', '*'],
+                    [$first[0], $first[1]],
+                    ['yellow', 'none']
+                )
+            );
         }
         // create a horizontal line
         $this->newLine(1, true);
@@ -75,10 +77,11 @@ class CommandAbout extends Command
         // set the header option
         $this->write(
             $this->formatter->format(
-            ['20%', '*'],
-            ['App Check', 'Description'],
-            [['bold', 'green'], 'light_cyan']
-        ));
+                ['20%', '*'],
+                ['App Check', 'Description'],
+                [['bold', 'green'], 'light_cyan']
+            )
+        );
 
         // create a horinzontal line
         $this->newLine(1, true);
@@ -105,10 +108,11 @@ class CommandAbout extends Command
         foreach ($app_section as $second) {
             $this->write(
                 $this->formatter->format(
-                ['20%', '*'],
-                [$second[0], $second[1]],
-                ['yellow', 'none']
-            ));
+                    ['20%', '*'],
+                    [$second[0], $second[1]],
+                    ['yellow', 'none']
+                )
+            );
         }
 
         // create a horizontal line

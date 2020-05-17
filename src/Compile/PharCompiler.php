@@ -334,12 +334,12 @@ class PharCompiler extends Terminal
     public function get_phar_signing_algorithms(): array
     {
         static $algorithms = [
-        'MD5'     => Phar::MD5,
-        'SHA1'    => Phar::SHA1,
-        'SHA256'  => Phar::SHA256,
-        'SHA512'  => Phar::SHA512,
-        'OPENSSL' => Phar::OPENSSL,
-    ];
+            'MD5'     => Phar::MD5,
+            'SHA1'    => Phar::SHA1,
+            'SHA256'  => Phar::SHA256,
+            'SHA512'  => Phar::SHA512,
+            'OPENSSL' => Phar::OPENSSL,
+        ];
 
         return $algorithms;
     }
